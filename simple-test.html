@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple NurmoAI Test</title>
+</head>
+<body>
+    <h1>NurmoAI Simple Test</h1>
+    <button onclick="testAPI()">Test API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            const API_KEY = 'nu-bVI8A2TPpxfwfxPP4oKrkvq5mlgwj8efUcQHstcoE8Knvs4M';
+            const API_URL = 'https://api.nurmo.app/v1/chat/completions';
+            const CHARACTER_ID = '43413d25-073c-4f3d-8cf1-f1c98cfa00b3';
+
+            try {
+                console.log('Making API request...');
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            { role: 'user', content: 'Hello' }
+                        ],
+                        model: 'nurmo-3',
+                        character: CHARACTER_ID
+                    })
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                const responseText = await response.text();
+                console.log('Response text:', responseText);
+
+                if (!response.ok) {
+                    resultDiv.innerHTML = `Error ${response.status}: ${responseText}`;
+                    return;
+                }
+
+                const data = JSON.parse(responseText);
+                console.log('Parsed data:', data);
+
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    resultDiv.innerHTML = `Success! AI says: ${data.choices[0].message.content}`;
+                } else {
+                    resultDiv.innerHTML = `Success but no message found. Full response: ${JSON.stringify(data)}`;
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html> 

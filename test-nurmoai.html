@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NurmoAI Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .api-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .test-form {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .response {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #2563eb;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: #fee;
+            border-left-color: #dc3545;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>NurmoAI Integration Test</h1>
+        
+        <div class="api-info">
+            <h3>API Configuration:</h3>
+            <p><strong>Endpoint:</strong> https://api.nurmo.app/v1/chat/completions</p>
+            <p><strong>Model:</strong> nurmo-3</p>
+            <p><strong>Character ID:</strong> 43413d25-073c-4f3d-8cf1-f1c98cfa00b3</p>
+            <p><strong>API Key:</strong> nu-bVI8A2TPpxfwfxPP4oKrkvq5mlgwj8efUcQHstcoE8Knvs4M</p>
+        </div>
+
+        <div class="test-form">
+            <h3>Test Message:</h3>
+            <input type="text" id="test-message" placeholder="Enter your test message..." value="Hello! Can you tell me about AI and cybersecurity?">
+            <button onclick="testNurmoAI()">Send Test Message</button>
+        </div>
+
+        <div id="response-container"></div>
+    </div>
+
+    <script>
+        const API_KEY = 'nu-bVI8A2TPpxfwfxPP4oKrkvq5mlgwj8efUcQHstcoE8Knvs4M';
+        const API_URL = 'https://api.nurmo.app/v1/chat/completions';
+        const CHARACTER_ID = '43413d25-073c-4f3d-8cf1-f1c98cfa00b3';
+
+        async function testNurmoAI() {
+            const message = document.getElementById('test-message').value.trim();
+            if (!message) {
+                alert('Please enter a message to test');
+                return;
+            }
+
+            const responseContainer = document.getElementById('response-container');
+            responseContainer.innerHTML = '<div class="response loading">Testing API connection...</div>';
+
+            try {
+                console.log('Testing NurmoAI API with message:', message);
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            { role: 'user', content: message }
+                        ],
+                        model: 'nurmo-3',
+                        character: CHARACTER_ID
+                    })
+                });
+
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error:', response.status, errorText);
+                    responseContainer.innerHTML = `
+                        <div class="response error">
+                            <strong>Error ${response.status}:</strong>
+                            ${errorText}
+                        </div>
+                    `;
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('API Response:', data);
+
+                let aiResponse;
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    aiResponse = data.choices[0].message.content;
+                } else if (data.content) {
+                    aiResponse = data.content;
+                } else if (data.message) {
+                    aiResponse = data.message;
+                } else {
+                    aiResponse = 'Response received but could not parse content. Full response: ' + JSON.stringify(data, null, 2);
+                }
+
+                responseContainer.innerHTML = `
+                    <div class="response">
+                        <strong>AI Response:</strong>
+                        ${aiResponse}
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Test error:', error);
+                responseContainer.innerHTML = `
+                    <div class="response error">
+                        <strong>Error:</strong>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testNurmoAI();
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

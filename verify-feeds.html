@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSS Feed Verification - A.Insiders</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #000000;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #0066ff;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #cccccc;
+            font-size: 1.1rem;
+        }
+        
+        .verification-status {
+            background: rgba(0, 102, 255, 0.1);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .status-running {
+            background: #ffaa00;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .status-complete {
+            background: #00ff88;
+        }
+        
+        .status-error {
+            background: #ff4444;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .result-card {
+            background: rgba(30, 30, 30, 0.8);
+            border: 1px solid rgba(51, 65, 85, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .result-card h3 {
+            color: #0066ff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .result-card.valid {
+            border-color: rgba(0, 255, 136, 0.3);
+        }
+        
+        .result-card.invalid {
+            border-color: rgba(255, 68, 68, 0.3);
+        }
+        
+        .result-card.error {
+            border-color: rgba(255, 170, 0, 0.3);
+        }
+        
+        .feed-list {
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 4px;
+            padding: 10px;
+        }
+        
+        .feed-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.2);
+            font-size: 0.9rem;
+        }
+        
+        .feed-item:last-child {
+            border-bottom: none;
+        }
+        
+        .feed-title {
+            font-weight: 500;
+            color: #ffffff;
+        }
+        
+        .feed-category {
+            color: #888888;
+            font-size: 0.8rem;
+        }
+        
+        .feed-details {
+            color: #cccccc;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+        
+        .console-output {
+            background: #1a1a1a;
+            border: 1px solid rgba(51, 65, 85, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 30px;
+        }
+        
+        .console-output::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .console-output::-webkit-scrollbar-track {
+            background: #2a2a2a;
+            border-radius: 4px;
+        }
+        
+        .console-output::-webkit-scrollbar-thumb {
+            background: #0066ff;
+            border-radius: 4px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(30, 30, 30, 0.8);
+            border: 1px solid rgba(51, 65, 85, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-valid {
+            color: #00ff88;
+        }
+        
+        .stat-invalid {
+            color: #ff4444;
+        }
+        
+        .stat-error {
+            color: #ffaa00;
+        }
+        
+        .stat-total {
+            color: #0066ff;
+        }
+        
+        .stat-label {
+            color: #888888;
+            font-size: 0.9rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0066ff, #4d94ff);
+            transition: width 0.3s ease;
+        }
+        
+        .start-button {
+            background: linear-gradient(135deg, #0066ff, #4d94ff);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 102, 255, 0.3);
+        }
+        
+        .start-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 RSS Feed Verification</h1>
+            <p>Verifying RSS and URL links from the OPML file for A.Insiders</p>
+        </div>
+        
+        <div class="verification-status">
+            <div id="status-indicator" class="status-indicator status-running"></div>
+            <span id="status-text">Ready to start verification</span>
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <button id="start-button" class="start-button">Start Verification</button>
+        
+        <div class="stats-grid" id="stats-grid" style="display: none;">
+            <div class="stat-card">
+                <div id="valid-count" class="stat-number stat-valid">0</div>
+                <div class="stat-label">Valid Feeds</div>
+            </div>
+            <div class="stat-card">
+                <div id="invalid-count" class="stat-number stat-invalid">0</div>
+                <div class="stat-label">Invalid Feeds</div>
+            </div>
+            <div class="stat-card">
+                <div id="error-count" class="stat-number stat-error">0</div>
+                <div class="stat-label">Errors</div>
+            </div>
+            <div class="stat-card">
+                <div id="total-count" class="stat-number stat-total">0</div>
+                <div class="stat-label">Total Tested</div>
+            </div>
+        </div>
+        
+        <div class="results" id="results" style="display: none;">
+            <div class="result-card valid">
+                <h3>✅ Valid Feeds</h3>
+                <div id="valid-feeds" class="feed-list">
+                    <div class="feed-item">Verification in progress...</div>
+                </div>
+            </div>
+            
+            <div class="result-card invalid">
+                <h3>❌ Invalid Feeds</h3>
+                <div id="invalid-feeds" class="feed-list">
+                    <div class="feed-item">Verification in progress...</div>
+                </div>
+            </div>
+            
+            <div class="result-card error">
+                <h3>⚠️ Errors</h3>
+                <div id="error-feeds" class="feed-list">
+                    <div class="feed-item">Verification in progress...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="console-output" id="console-output">
+            RSS Feed Verification Console
+            =============================
+            
+            Ready to start verification...
+            
+        </div>
+    </div>
+    
+    <script src="verify-feeds.js"></script>
+    <script>
+        // Enhanced verification with UI updates
+        class EnhancedFeedVerifier extends FeedVerifier {
+            constructor() {
+                super();
+                this.uiElements = {
+                    statusIndicator: document.getElementById('status-indicator'),
+                    statusText: document.getElementById('status-text'),
+                    progressFill: document.getElementById('progress-fill'),
+                    startButton: document.getElementById('start-button'),
+                    statsGrid: document.getElementById('stats-grid'),
+                    results: document.getElementById('results'),
+                    validCount: document.getElementById('valid-count'),
+                    invalidCount: document.getElementById('invalid-count'),
+                    errorCount: document.getElementById('error-count'),
+                    totalCount: document.getElementById('total-count'),
+                    validFeeds: document.getElementById('valid-feeds'),
+                    invalidFeeds: document.getElementById('invalid-feeds'),
+                    errorFeeds: document.getElementById('error-feeds'),
+                    consoleOutput: document.getElementById('console-output')
+                };
+                
+                this.setupEventListeners();
+            }
+            
+            setupEventListeners() {
+                this.uiElements.startButton.addEventListener('click', () => {
+                    this.startVerification();
+                });
+            }
+            
+            async startVerification() {
+                this.uiElements.startButton.disabled = true;
+                this.uiElements.startButton.textContent = 'Verifying...';
+                this.uiElements.statusText.textContent = 'Starting verification...';
+                this.uiElements.statusIndicator.className = 'status-indicator status-running';
+                
+                // Clear previous results
+                this.results = { valid: [], invalid: [], errors: [] };
+                this.updateUI();
+                
+                try {
+                    await this.verifyOPMLFeeds();
+                } catch (error) {
+                    console.error('Verification failed:', error);
+                    this.uiElements.statusText.textContent = 'Verification failed';
+                    this.uiElements.statusIndicator.className = 'status-indicator status-error';
+                }
+                
+                this.uiElements.startButton.disabled = false;
+                this.uiElements.startButton.textContent = 'Start Verification';
+            }
+            
+            async verifyOPMLFeeds() {
+                this.log('🔍 Starting RSS feed verification...');
+                
+                try {
+                    const opmlContent = await this.loadOPMLFile();
+                    this.opmlData = this.parseOPML(opmlContent);
+                    
+                    this.log(`📊 Found ${this.opmlData.length} feeds to verify`);
+                    this.updateProgress(0);
+                    
+                    for (let i = 0; i < this.opmlData.length; i++) {
+                        const feed = this.opmlData[i];
+                        this.log(`\n${i + 1}/${this.opmlData.length} - Verifying: ${feed.title}`);
+                        
+                        await this.verifyFeed(feed);
+                        this.updateProgress(((i + 1) / this.opmlData.length) * 100);
+                        this.updateUI();
+                        
+                        await this.delay(500);
+                    }
+                    
+                    this.generateReport();
+                    this.uiElements.statusText.textContent = 'Verification complete!';
+                    this.uiElements.statusIndicator.className = 'status-indicator status-complete';
+                    
+                } catch (error) {
+                    this.log('❌ Error during verification: ' + error.message);
+                    throw error;
+                }
+            }
+            
+            async verifyFeed(feed) {
+                try {
+                    const startTime = Date.now();
+                    
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(feed.url)}`;
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000);
+                    
+                    const response = await fetch(proxyUrl, {
+                        signal: controller.signal,
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                        }
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    const responseTime = Date.now() - startTime;
+                    
+                    if (response.ok) {
+                        const text = await response.text();
+                        
+                        if (text && text.trim() !== '') {
+                            const isValidXML = this.validateXML(text);
+                            
+                            if (isValidXML) {
+                                const articleCount = this.countArticles(text);
+                                
+                                this.results.valid.push({
+                                    ...feed,
+                                    responseTime,
+                                    articleCount,
+                                    status: 'Valid'
+                                });
+                                
+                                this.log(`✅ Valid: ${feed.title} (${articleCount} articles, ${responseTime}ms)`);
+                            } else {
+                                this.results.invalid.push({
+                                    ...feed,
+                                    responseTime,
+                                    error: 'Invalid XML format',
+                                    status: 'Invalid XML'
+                                });
+                                
+                                this.log(`❌ Invalid XML: ${feed.title}`);
+                            }
+                        } else {
+                            this.results.invalid.push({
+                                ...feed,
+                                responseTime,
+                                error: 'Empty response',
+                                status: 'Empty'
+                            });
+                            
+                            this.log(`❌ Empty: ${feed.title}`);
+                        }
+                    } else {
+                        this.results.invalid.push({
+                            ...feed,
+                            responseTime,
+                            error: `HTTP ${response.status}: ${response.statusText}`,
+                            status: 'HTTP Error'
+                        });
+                        
+                        this.log(`❌ HTTP Error: ${feed.title} (${response.status})`);
+                    }
+                    
+                } catch (error) {
+                    const errorMsg = error.name === 'AbortError' ? 'Timeout' : error.message;
+                    
+                    this.results.errors.push({
+                        ...feed,
+                        error: errorMsg,
+                        status: 'Error'
+                    });
+                    
+                    this.log(`❌ Error: ${feed.title} - ${errorMsg}`);
+                }
+            }
+            
+            updateProgress(percentage) {
+                this.uiElements.progressFill.style.width = percentage + '%';
+            }
+            
+            updateUI() {
+                // Update stats
+                this.uiElements.validCount.textContent = this.results.valid.length;
+                this.uiElements.invalidCount.textContent = this.results.invalid.length;
+                this.uiElements.errorCount.textContent = this.results.errors.length;
+                this.uiElements.totalCount.textContent = this.opmlData ? this.opmlData.length : 0;
+                
+                // Update feed lists
+                this.uiElements.validFeeds.innerHTML = this.results.valid.length > 0 
+                    ? this.results.valid.map(feed => this.createFeedItem(feed, 'valid')).join('')
+                    : '<div class="feed-item">No valid feeds yet</div>';
+                
+                this.uiElements.invalidFeeds.innerHTML = this.results.invalid.length > 0
+                    ? this.results.invalid.map(feed => this.createFeedItem(feed, 'invalid')).join('')
+                    : '<div class="feed-item">No invalid feeds yet</div>';
+                
+                this.uiElements.errorFeeds.innerHTML = this.results.errors.length > 0
+                    ? this.results.errors.map(feed => this.createFeedItem(feed, 'error')).join('')
+                    : '<div class="feed-item">No errors yet</div>';
+                
+                // Show results when we have data
+                if (this.opmlData) {
+                    this.uiElements.statsGrid.style.display = 'grid';
+                    this.uiElements.results.style.display = 'grid';
+                }
+            }
+            
+            createFeedItem(feed, type) {
+                const details = type === 'valid' 
+                    ? `${feed.articleCount} articles • ${feed.responseTime}ms`
+                    : feed.error;
+                
+                return `
+                    <div class="feed-item">
+                        <div class="feed-title">${feed.title}</div>
+                        <div class="feed-category">${feed.category}</div>
+                        <div class="feed-details">${details}</div>
+                    </div>
+                `;
+            }
+            
+            log(message) {
+                this.uiElements.consoleOutput.textContent += message + '\n';
+                this.uiElements.consoleOutput.scrollTop = this.uiElements.consoleOutput.scrollHeight;
+                console.log(message);
+            }
+            
+            generateReport() {
+                this.log('\n' + '='.repeat(80));
+                this.log('📊 RSS FEED VERIFICATION REPORT');
+                this.log('='.repeat(80));
+                
+                this.log(`\n✅ Valid Feeds: ${this.results.valid.length}`);
+                this.log(`❌ Invalid Feeds: ${this.results.invalid.length}`);
+                this.log(`⚠️  Errors: ${this.results.errors.length}`);
+                this.log(`📈 Total Tested: ${this.opmlData.length}`);
+                
+                const successRate = ((this.results.valid.length / this.opmlData.length) * 100).toFixed(1);
+                this.log(`🎯 Success Rate: ${successRate}%`);
+                
+                this.log('\n✅ Verification complete!');
+            }
+        }
+        
+        // Initialize enhanced verifier
+        document.addEventListener('DOMContentLoaded', () => {
+            window.verifier = new EnhancedFeedVerifier();
+        });
+    </script>
+</body>
+</html> 

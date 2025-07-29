@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Nexus - AI Consulting & Solutions</title>
+  <link rel="stylesheet" href="brain-styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Loader -->
+  <div id="loader" class="loader">
+    <div class="loader-content">
+      <div class="ai-loader">
+        <div class="ai-node"></div>
+        <div class="ai-node"></div>
+        <div class="ai-node"></div>
+        <div class="ai-node"></div>
+        <div class="ai-node"></div>
+        <div class="ai-node"></div>
+      </div>
+      <div class="loader-text">Initializing</div>
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <span class="logo-text">A.I</span>
+        <span class="logo-accent">NSIDERS</span>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="#home" class="nav-link">Home</a></li>
+        <li><a href="#work" class="nav-link">Work</a></li>
+        <li><a href="#services" class="nav-link">Services</a></li>
+        <li><a href="#news" class="nav-link">News</a></li>
+        <li><a href="#contact" class="nav-link">Contact</a></li>
+      </ul>
+      <div class="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header id="home" class="hero">
+    <canvas id="aiCanvas"></canvas>
+    <div class="hero-content">
+      <div class="hero-tagline">
+        <span>I</span><span>t</span><span>&nbsp;</span><span>a</span><span>l</span><span>l</span><span>&nbsp;</span><span>s</span><span>t</span><span>a</span><span>r</span><span>t</span><span>s</span><span>&nbsp;</span><span>w</span><span>i</span><span>t</span><span>h</span><span>&nbsp;</span><span>a</span><span>&nbsp;</span><span>s</span><span>p</span><span>a</span><span>r</span><span>k</span>
+      </div>
+      <h1 class="hero-title">
+        <span>A</span><span>I</span><span>&nbsp;</span><span>P</span><span>O</span><span>W</span><span>E</span><span>R</span><span>H</span><span>O</span><span>U</span><span>S</span><span>E</span>
+      </h1>
+      <p class="hero-subtitle">We empower businesses to harness the power of artificial intelligence</p>
+      <a href="#work" class="cta-button">Explore</a>
+    </div>
+    <div class="scroll-indicator">
+      <div class="scroll-text">Scroll to discover</div>
+    </div>
+  </header>
+
+  <!-- Work Section -->
+  <section id="work" class="work fade-section">
+    <div class="container">
+      <div class="work-header">
+        <h2 class="work-title">For crafting intelligent digital solutions,<br>the world is our canvas.</h2>
+        <div class="work-subtitle">
+          <h3>Every project is a fusion of strategy, creativity and AI innovation</h3>
+        </div>
+      </div>
+      
+      <div class="filter-section">
+        <div class="filter-label">filter by</div>
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="all">/ All works (25)</button>
+          <button class="filter-btn" data-filter="ai">/ AI Solutions (8)</button>
+          <button class="filter-btn" data-filter="consulting">/ Consulting (6)</button>
+          <button class="filter-btn" data-filter="tools">/ AI Tools (7)</button>
+          <button class="filter-btn" data-filter="strategy">/ Strategy (4)</button>
+        </div>
+      </div>
+      
+      <div class="work-description">
+        <p>Endless opportunities to explore, innovate, and create meaningful AI-driven connections.</p>
+      </div>
+      
+      <div class="work-grid">
+        <div class="work-item ai">
+          <div class="work-image">
+            <div class="work-overlay">
+              <div class="work-categories">AI Solutions</div>
+            </div>
+          </div>
+          <div class="work-info">
+            <h4>AI-Powered Analytics Platform</h4>
+            <p>Advanced data analytics with machine learning</p>
+          </div>
+        </div>
+        
+        <div class="work-item consulting">
+          <div class="work-image">
+            <div class="work-overlay">
+              <div class="work-categories">Consulting</div>
+            </div>
+          </div>
+          <div class="work-info">
+            <h4>Enterprise AI Strategy</h4>
+            <p>Comprehensive AI transformation roadmap</p>
+          </div>
+        </div>
+        
+        <div class="work-item tools">
+          <div class="work-image">
+            <div class="work-overlay">
+              <div class="work-categories">AI Tools</div>
+            </div>
+          </div>
+          <div class="work-info">
+            <h4>Custom AI Chatbot</h4>
+            <p>Intelligent customer service automation</p>
+          </div>
+        </div>
+        
+        <div class="work-item ai">
+          <div class="work-image">
+            <div class="work-overlay">
+              <div class="work-categories">AI Solutions</div>
+            </div>
+          </div>
+          <div class="work-info">
+            <h4>Predictive Analytics System</h4>
+            <p>Future insights through AI modeling</p>
+          </div>
+        </div>
+        
+        <div class="work-item strategy">
+          <div class="work-image">
+            <div class="work-overlay">
+              <div class="work-categories">Strategy</div>
+            </div>
+          </div>
+          <div class="work-info">
+            <h4>AI Implementation Roadmap</h4>
+            <p>Strategic planning for AI adoption</p>
+          </div>
+        </div>
+        
+        <div class="work-item tools">
+          <div class="work-image">
+            <div class="work-overlay">
+              <div class="work-categories">AI Tools</div>
+            </div>
+          </div>
+          <div class="work-info">
+            <h4>Automated Content Generator</h4>
+            <p>AI-powered content creation tools</p>
+          </div>
+        </div>
+        
+        <div class="work-item consulting">
+          <div class="work-image">
+            <div class="work-overlay">
+              <div class="work-categories">Consulting</div>
+            </div>
+          </div>
+          <div class="work-info">
+            <h4>AI Readiness Assessment</h4>
+            <p>Comprehensive organizational evaluation</p>
+          </div>
+        </div>
+        
+        <div class="work-item ai">
+          <div class="work-image">
+            <div class="work-overlay">
+              <div class="work-categories">AI Solutions</div>
+            </div>
+          </div>
+          <div class="work-info">
+            <h4>Computer Vision Platform</h4>
+            <p>Advanced image recognition systems</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section id="services" class="services fade-section">
+    <div class="container">
+      <div class="services-header">
+        <h2 class="services-title">Services</h2>
+        <div class="services-subtitle">
+          <h3>Comprehensive AI solutions for modern businesses</h3>
+        </div>
+      </div>
+      
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-icon">🤖</div>
+          <h3>AI Strategy & Consulting</h3>
+          <p>Strategic guidance for AI implementation and digital transformation initiatives.</p>
+          <ul class="service-features">
+            <li>AI Readiness Assessment</li>
+            <li>Implementation Roadmaps</li>
+            <li>Technology Selection</li>
+            <li>Change Management</li>
+          </ul>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">💻</div>
+          <h3>AI Development</h3>
+          <p>Custom AI solutions and machine learning models tailored to your business needs.</p>
+          <ul class="service-features">
+            <li>Custom AI Models</li>
+            <li>Machine Learning Systems</li>
+            <li>Natural Language Processing</li>
+            <li>Computer Vision</li>
+          </ul>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🛠️</div>
+          <h3>AI Tools & Platforms</h3>
+          <p>Ready-to-use AI tools and platforms to accelerate your business processes.</p>
+          <ul class="service-features">
+            <li>Chatbots & Virtual Assistants</li>
+            <li>Content Generation Tools</li>
+            <li>Analytics Platforms</li>
+            <li>Automation Solutions</li>
+          </ul>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">📊</div>
+          <h3>Data & Analytics</h3>
+          <p>Advanced analytics and data-driven insights powered by artificial intelligence.</p>
+          <ul class="service-features">
+            <li>Predictive Analytics</li>
+            <li>Data Strategy</li>
+            <li>Business Intelligence</li>
+            <li>Performance Optimization</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- News Section -->
+  <section id="news" class="news fade-section">
+    <div class="container">
+      <div class="news-header">
+        <h2 class="news-title">Latest AI Insights</h2>
+        <div class="news-subtitle">
+          <h3>Stay updated with the latest trends and innovations in artificial intelligence</h3>
+        </div>
+      </div>
+      
+      <div class="news-grid">
+        <article class="news-item">
+          <div class="news-image">
+            <div class="news-category">AI Trends</div>
+          </div>
+          <div class="news-content">
+            <h4>The Future of AI in Business</h4>
+            <p>Exploring how artificial intelligence is transforming modern business operations and decision-making processes.</p>
+            <div class="news-meta">
+              <span class="news-date">March 15, 2024</span>
+              <span class="news-read-time">5 min read</span>
+            </div>
+          </div>
+        </article>
+        
+        <article class="news-item">
+          <div class="news-image">
+            <div class="news-category">Technology</div>
+          </div>
+          <div class="news-content">
+            <h4>Machine Learning Best Practices</h4>
+            <p>Essential guidelines for implementing successful machine learning projects in enterprise environments.</p>
+            <div class="news-meta">
+              <span class="news-date">March 12, 2024</span>
+              <span class="news-read-time">8 min read</span>
+            </div>
+          </div>
+        </article>
+        
+        <article class="news-item">
+          <div class="news-image">
+            <div class="news-category">Consulting</div>
+          </div>
+          <div class="news-content">
+            <h4>AI Strategy Development</h4>
+            <p>How to create a comprehensive AI strategy that aligns with your business goals and objectives.</p>
+            <div class="news-meta">
+              <span class="news-date">March 10, 2024</span>
+              <span class="news-read-time">6 min read</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section id="testimonials" class="testimonials fade-section">
+    <div class="container">
+      <div class="testimonials-header">
+        <h2 class="testimonials-title">Some kind words from our clients</h2>
+      </div>
+      
+      <div class="testimonials-grid">
+        <div class="testimonial-item">
+          <blockquote>
+            "AI Nexus is a key strategic partner in evolving our AI capabilities. Their commitment and innovation enabled us to implement cutting-edge AI solutions that transformed our business operations."
+          </blockquote>
+          <div class="testimonial-author">
+            <h4>Sarah Johnson</h4>
+            <p>CTO, TechCorp (NY, USA)</p>
+            <div class="testimonial-categories">
+              <span>ai</span>
+              <span>consulting</span>
+              <span>strategy</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="testimonial-item">
+          <blockquote>
+            "We've worked with AI Nexus for years. They were the first to truly understand our AI needs with fresh perspective and strategic insight. A key ally in every stage of our AI evolution."
+          </blockquote>
+          <div class="testimonial-author">
+            <h4>Michael Chen</h4>
+            <p>CEO, DataFlow Inc. (CA, USA)</p>
+            <div class="testimonial-categories">
+              <span>ai</span>
+              <span>consulting</span>
+              <span>tools</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="testimonial-item">
+          <blockquote>
+            "Working with AI Nexus on our AI implementation was a seamless and inspiring experience. They understood our vision from day one and delivered a modern, functional AI system."
+          </blockquote>
+          <div class="testimonial-author">
+            <h4>Emily Rodriguez</h4>
+            <p>VP of Innovation, FutureTech (TX, USA)</p>
+            <div class="testimonial-categories">
+              <span>ai</span>
+              <span>development</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact" class="contact fade-section">
+    <div class="container">
+      <div class="contact-header">
+        <h2 class="contact-title">The future is waiting<br>— <strong>let's create it</strong></h2>
+        <div class="contact-cta">
+          <a href="#contact-form" class="cta-button">Let's Talk</a>
+        </div>
+      </div>
+      
+      <div class="contact-content">
+        <div class="contact-info">
+          <h3>New Business?</h3>
+          <p>Ready to transform your business with AI? Let's discuss your project.</p>
+          <div class="contact-details">
+            <div class="contact-item">
+              <span class="contact-email">hi@ainexus.ai</span>
+            </div>
+          </div>
+        </div>
+        
+        <form id="contact-form" class="contact-form">
+          <h3>Let's create something together</h3>
+          
+          <div class="form-group">
+            <label>/ 1. What we'll be crafting together...*</label>
+            <select required>
+              <option value="">Please select one option</option>
+              <option value="strategy">AI Strategy & Consulting</option>
+              <option value="development">AI Development</option>
+              <option value="tools">AI Tools & Platforms</option>
+              <option value="analytics">Data & Analytics</option>
+              <option value="other">Others</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>/ 2. Your budget is...*</label>
+            <select required>
+              <option value="">Please select one option</option>
+              <option value="25-50">USD 25,000 - 50,000</option>
+              <option value="50-100">USD 50,000 - 100,000</option>
+              <option value="100-200">USD 100,000 - 200,000</option>
+              <option value="200+">USD 200,000+</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>/ 3. Tell us a little about you...</label>
+            <input type="text" placeholder="Your Name* eg: John Smith" required>
+          </div>
+          
+          <div class="form-group">
+            <input type="email" placeholder="Email* eg: john@company.com" required>
+          </div>
+          
+          <div class="form-group">
+            <input type="text" placeholder="Company eg: TechCorp Inc.">
+          </div>
+          
+          <div class="form-group">
+            <textarea placeholder="What's on your mind?* eg: I want to implement AI in my business but don't know where to start" rows="4" required></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>Do you have a specific deadline?</label>
+            <select>
+              <option value="">Select deadline</option>
+              <option value="1">1 month</option>
+              <option value="2">2 months</option>
+              <option value="3">3 months</option>
+              <option value="6">6 months</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Where do you know us from?</label>
+            <select>
+              <option value="">Select option</option>
+              <option value="awards">Awards websites</option>
+              <option value="project">A project we did</option>
+              <option value="article">An article</option>
+              <option value="social">Social media</option>
+              <option value="google">Google search</option>
+              <option value="recommendation">Friend recommendation</option>
+              <option value="other">Others</option>
+            </select>
+          </div>
+          
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox">
+              <span>I want to subscribe to AI Nexus news</span>
+            </label>
+          </div>
+          
+          <button type="submit" class="submit-btn">Send Message</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <div class="footer-logo">
+            <span class="logo-text">A.I</span>
+            <span class="logo-accent">NSIDERS</span>
+          </div>
+          <p>We empower businesses to harness the power of artificial intelligence</p>
+        </div>
+        <div class="footer-section">
+          <h4>Services</h4>
+          <ul>
+            <li><a href="#services">AI Strategy & Consulting</a></li>
+            <li><a href="#services">AI Development</a></li>
+            <li><a href="#services">AI Tools & Platforms</a></li>
+            <li><a href="#services">Data & Analytics</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="#work">Work</a></li>
+            <li><a href="#news">News</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="#">Awards</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Connect</h4>
+          <div class="social-links">
+            <a href="#" class="social-link">LinkedIn</a>
+            <a href="#" class="social-link">Twitter</a>
+            <a href="#" class="social-link">GitHub</a>
+            <a href="#" class="social-link">Medium</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 AI Nexus. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="brain-script.js"></script>
+</body>
+</html> 

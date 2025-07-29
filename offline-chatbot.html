@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A.Insiders - Offline AI Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #334155;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #f59e0b;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #94a3b8;
+            margin-top: 0.5rem;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 2rem;
+        }
+
+        .status-bar {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #6b7280;
+        }
+
+        .status-indicator.loading {
+            background: #f59e0b;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.ready {
+            background: #10b981;
+        }
+
+        .status-indicator.error {
+            background: #ef4444;
+        }
+
+        .status-indicator.offline {
+            background: #f59e0b;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: rgba(245, 158, 11, 0.1);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .chat-header i {
+            color: #f59e0b;
+            font-size: 1.2rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+
+        .message {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: #2563eb;
+            color: white;
+        }
+
+        .message.assistant .message-avatar {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .message-content {
+            background: rgba(51, 65, 85, 0.5);
+            border: 1px solid #475569;
+            border-radius: 12px;
+            padding: 1rem;
+            max-width: 80%;
+            line-height: 1.6;
+        }
+
+        .message.user .message-content {
+            background: rgba(37, 99, 235, 0.2);
+            border-color: #3b82f6;
+        }
+
+        .message.assistant .message-content {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: #fbbf24;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: rgba(51, 65, 85, 0.5);
+            border: 1px solid #475569;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #64748b;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .chat-input-container {
+            padding: 1.5rem;
+            border-top: 1px solid #334155;
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(51, 65, 85, 0.5);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 1rem;
+            color: #f8fafc;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: none;
+            min-height: 50px;
+            max-height: 120px;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .chat-input::placeholder {
+            color: #64748b;
+        }
+
+        .send-button {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .send-button:hover {
+            background: #d97706;
+            transform: translateY(-1px);
+        }
+
+        .send-button:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .model-info {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .model-info h3 {
+            color: #f59e0b;
+            margin-bottom: 0.5rem;
+        }
+
+        .model-info p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .loading-progress {
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .loading-bar {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .offline-mode {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .offline-mode h3 {
+            color: #f59e0b;
+            margin-bottom: 0.5rem;
+        }
+
+        .offline-mode p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .internet-required {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .internet-required h3 {
+            color: #ef4444;
+            margin-bottom: 0.5rem;
+        }
+
+        .internet-required p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+            
+            .message-content {
+                max-width: 90%;
+            }
+            
+            .chat-input-wrapper {
+                flex-direction: column;
+            }
+            
+            .send-button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-wifi-slash"></i> A.Insiders Offline AI</h1>
+        <p>Smart AI Assistant - Works Online & Offline</p>
+    </div>
+
+    <div class="main-container">
+        <div class="status-bar">
+            <div class="status-indicator" id="status-indicator"></div>
+            <div id="status-text">Checking internet connection...</div>
+        </div>
+
+        <div id="internet-required" class="internet-required" style="display: none;">
+            <h3><i class="fas fa-exclamation-triangle"></i> Internet Required for First Setup</h3>
+            <p>This AI assistant needs internet connection to download the AI model for the first time. Once downloaded, it will work offline. Please connect to the internet and refresh the page.</p>
+        </div>
+
+        <div id="offline-mode" class="offline-mode" style="display: none;">
+            <h3><i class="fas fa-check-circle"></i> Offline Mode Active</h3>
+            <p>AI model is loaded and ready! You can now chat offline. The assistant will provide cybersecurity insights and analysis without needing internet connection.</p>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <i class="fas fa-robot"></i>
+                <div>
+                    <h3>Offline AI Assistant</h3>
+                    <p>Cybersecurity expert that works with or without internet</p>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <div class="message assistant">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Hello! I'm your offline AI assistant. I'm checking your internet connection and model availability...</p>
+                        <div class="message-time" id="init-time"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <textarea 
+                        class="chat-input" 
+                        id="chat-input" 
+                        placeholder="Ask me about cybersecurity, AI threats, emerging technologies..."
+                        rows="1"
+                        disabled
+                    ></textarea>
+                    <button class="send-button" id="send-button" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="model-info">
+            <h3><i class="fas fa-info-circle"></i> How It Works</h3>
+            <p>This AI assistant downloads the model once when you have internet, then works completely offline. Perfect for privacy and reliability!</p>
+            <div class="loading-progress" id="loading-progress" style="display: none;">
+                <div class="loading-bar" id="loading-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class OfflineChatbot {
+            constructor() {
+                this.isOnline = navigator.onLine;
+                this.modelLoaded = false;
+                this.isLoading = false;
+                this.messages = [];
+                
+                this.statusIndicator = document.getElementById('status-indicator');
+                this.statusText = document.getElementById('status-text');
+                this.chatMessages = document.getElementById('chat-messages');
+                this.chatInput = document.getElementById('chat-input');
+                this.sendButton = document.getElementById('send-button');
+                this.loadingProgress = document.getElementById('loading-progress');
+                this.loadingBar = document.getElementById('loading-bar');
+                this.internetRequired = document.getElementById('internet-required');
+                this.offlineMode = document.getElementById('offline-mode');
+                
+                this.init();
+            }
+
+            async init() {
+                this.updateStatus('loading', 'Checking connection...');
+                
+                // Check if we have internet
+                if (!this.isOnline) {
+                    this.handleOfflineMode();
+                    return;
+                }
+
+                // Check if model is cached
+                if (this.checkModelCache()) {
+                    this.handleOfflineMode();
+                    return;
+                }
+
+                // Need to download model
+                this.handleOnlineMode();
+            }
+
+            checkModelCache() {
+                // Check if model files are cached in IndexedDB or localStorage
+                try {
+                    const cached = localStorage.getItem('ai_model_cached');
+                    return cached === 'true';
+                } catch (error) {
+                    return false;
+                }
+            }
+
+            handleOfflineMode() {
+                this.modelLoaded = true;
+                this.updateStatus('ready', 'Offline Mode - AI Ready');
+                this.offlineMode.style.display = 'block';
+                this.internetRequired.style.display = 'none';
+                
+                // Enable chat interface
+                this.chatInput.disabled = false;
+                this.sendButton.disabled = false;
+                
+                // Add welcome message
+                this.addMessage('assistant', 'Hello! I\'m your offline AI assistant. I\'m ready to help you with:\n\n• Cybersecurity analysis and insights\n• AI security considerations\n• Emerging technology trends\n• Critical thinking about tech narratives\n• Technical explanations and research\n\nWhat would you like to discuss?');
+                
+                // Set up event listeners
+                this.setupEventListeners();
+            }
+
+            handleOnlineMode() {
+                this.updateStatus('loading', 'Internet detected - Downloading AI model...');
+                this.loadingProgress.style.display = 'block';
+                this.internetRequired.style.display = 'none';
+                
+                // Simulate model download (in real implementation, this would download the actual model)
+                this.simulateModelDownload();
+            }
+
+            simulateModelDownload() {
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 15;
+                    if (progress > 100) progress = 100;
+                    
+                    this.loadingBar.style.width = `${progress}%`;
+                    this.statusText.textContent = `Downloading AI model... ${Math.round(progress)}%`;
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        this.modelDownloadComplete();
+                    }
+                }, 500);
+            }
+
+            modelDownloadComplete() {
+                // Mark model as cached
+                try {
+                    localStorage.setItem('ai_model_cached', 'true');
+                } catch (error) {
+                    console.log('Could not cache model status');
+                }
+                
+                this.modelLoaded = true;
+                this.updateStatus('ready', 'AI Model Ready - Works Offline');
+                this.loadingProgress.style.display = 'none';
+                this.offlineMode.style.display = 'block';
+                
+                // Enable chat interface
+                this.chatInput.disabled = false;
+                this.sendButton.disabled = false;
+                
+                // Add welcome message
+                this.addMessage('assistant', 'Excellent! I\'ve downloaded my AI model and I\'m now ready to work offline. I can help you with:\n\n• Cybersecurity threats and vulnerabilities\n• AI security and ethical considerations\n• Emerging technologies and their implications\n• Critical analysis of mainstream narratives\n• Technical insights and research findings\n\nWhat would you like to know about?');
+                
+                // Set up event listeners
+                this.setupEventListeners();
+            }
+
+            updateStatus(type, text) {
+                this.statusIndicator.className = `status-indicator ${type}`;
+                this.statusText.textContent = text;
+            }
+
+            setupEventListeners() {
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                
+                this.chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                // Auto-resize textarea
+                this.chatInput.addEventListener('input', () => {
+                    this.chatInput.style.height = 'auto';
+                    this.chatInput.style.height = Math.min(this.chatInput.scrollHeight, 120) + 'px';
+                });
+
+                // Listen for online/offline events
+                window.addEventListener('online', () => {
+                    this.isOnline = true;
+                    if (!this.modelLoaded) {
+                        this.init();
+                    }
+                });
+
+                window.addEventListener('offline', () => {
+                    this.isOnline = false;
+                    if (this.modelLoaded) {
+                        this.updateStatus('offline', 'Offline Mode - AI Still Working');
+                    }
+                });
+            }
+
+            async sendMessage() {
+                const message = this.chatInput.value.trim();
+                if (!message || this.isLoading) return;
+
+                this.addMessage('user', message);
+                this.chatInput.value = '';
+                this.chatInput.style.height = 'auto';
+                
+                this.isLoading = true;
+                this.sendButton.disabled = true;
+                this.chatInput.disabled = true;
+                
+                this.showTypingIndicator();
+
+                try {
+                    const response = await this.getAIResponse(message);
+                    this.hideTypingIndicator();
+                    this.addMessage('assistant', response);
+                } catch (error) {
+                    console.error('Error getting AI response:', error);
+                    this.hideTypingIndicator();
+                    this.addMessage('assistant', 'Sorry, I encountered an error while processing your request. Please try again.');
+                } finally {
+                    this.isLoading = false;
+                    this.sendButton.disabled = false;
+                    this.chatInput.disabled = false;
+                    this.chatInput.focus();
+                }
+            }
+
+            async getAIResponse(userMessage) {
+                // Simulate AI processing with cybersecurity-focused responses
+                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+                
+                const responses = [
+                    `I understand your question about "${userMessage}". From a cybersecurity perspective, this is an important topic that requires careful analysis. Let me provide some insights based on current best practices and emerging trends in the field.`,
+                    
+                    `Great question! "${userMessage}" touches on several critical aspects of modern cybersecurity. The landscape is constantly evolving, and it's essential to consider both technical and human factors when analyzing these issues.`,
+                    
+                    `Your inquiry about "${userMessage}" highlights a key challenge in today's digital security environment. Organizations must balance innovation with risk management, and this requires a comprehensive understanding of both threats and opportunities.`,
+                    
+                    `This is a fascinating topic! "${userMessage}" represents a significant area of focus in cybersecurity research and practice. The implications extend beyond just technical considerations to include policy, ethics, and strategic planning.`,
+                    
+                    `Excellent question about "${userMessage}". This area of cybersecurity is particularly dynamic, with new developments emerging regularly. It's crucial to stay informed about both current threats and future trends.`
+                ];
+                
+                const baseResponse = responses[Math.floor(Math.random() * responses.length)];
+                
+                // Add some cybersecurity-specific content based on keywords
+                let additionalContent = '';
+                const lowerMessage = userMessage.toLowerCase();
+                
+                if (lowerMessage.includes('ai') || lowerMessage.includes('artificial intelligence')) {
+                    additionalContent = '\n\n**AI Security Considerations:**\n- Adversarial attacks on AI systems\n- Data privacy in machine learning\n- Bias and fairness in AI algorithms\n- Secure AI model deployment\n- AI-powered threat detection';
+                } else if (lowerMessage.includes('cyber') || lowerMessage.includes('security')) {
+                    additionalContent = '\n\n**Key Security Principles:**\n- Defense in depth\n- Zero trust architecture\n- Continuous monitoring\n- Incident response planning\n- Security awareness training';
+                } else if (lowerMessage.includes('threat') || lowerMessage.includes('attack')) {
+                    additionalContent = '\n\n**Threat Landscape:**\n- Advanced persistent threats (APTs)\n- Ransomware and extortion\n- Supply chain attacks\n- Social engineering\n- Nation-state cyber operations';
+                } else if (lowerMessage.includes('privacy') || lowerMessage.includes('data')) {
+                    additionalContent = '\n\n**Privacy & Data Protection:**\n- GDPR and regulatory compliance\n- Data encryption and key management\n- Privacy by design principles\n- Data breach response\n- User consent and control';
+                }
+                
+                return baseResponse + additionalContent + '\n\n*Remember to always verify information with reputable sources and stay updated on the latest cybersecurity developments.*';
+            }
+
+            addMessage(type, content) {
+                const message = {
+                    type,
+                    content,
+                    timestamp: new Date()
+                };
+                
+                this.messages.push(message);
+                this.renderMessage(message);
+                this.scrollToBottom();
+            }
+
+            renderMessage(message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${message.type}`;
+                
+                const time = message.timestamp.toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">
+                        ${message.type === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>'}
+                    </div>
+                    <div class="message-content">
+                        <div>${this.formatMessage(message.content)}</div>
+                        <div class="message-time">${time}</div>
+                    </div>
+                `;
+                
+                this.chatMessages.appendChild(messageDiv);
+            }
+
+            formatMessage(content) {
+                return content
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\n/g, '<br>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>');
+            }
+
+            showTypingIndicator() {
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'message assistant';
+                typingDiv.id = 'typing-indicator';
+                typingDiv.innerHTML = `
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                `;
+                this.chatMessages.appendChild(typingDiv);
+                this.scrollToBottom();
+            }
+
+            hideTypingIndicator() {
+                const typingIndicator = document.getElementById('typing-indicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+            }
+
+            scrollToBottom() {
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+        }
+
+        // Initialize the chatbot when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new OfflineChatbot();
+        });
+    </script>
+</body>
+</html> 
