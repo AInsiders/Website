@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - News Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000000;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .offline-container {
+            text-align: center;
+            max-width: 500px;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #0066ff, #4d94ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .retry-btn {
+            background: linear-gradient(135deg, #0066ff, #4d94ff);
+            color: #000;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 102, 255, 0.3);
+        }
+        
+        .cached-content {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 3px solid #0066ff;
+        }
+        
+        .cached-content h3 {
+            color: #0066ff;
+            margin-bottom: 0.5rem;
+        }
+        
+        .cached-content p {
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📡</div>
+        <h1>You're Offline</h1>
+        <p>Don't worry! Your news dashboard is designed to work offline. We'll show you cached content while you're disconnected.</p>
+        
+        <button class="retry-btn" onclick="retryConnection()">
+            🔄 Try Again
+        </button>
+        
+        <div class="cached-content">
+            <h3>📦 Cached Content Available</h3>
+            <p>Your previously loaded articles are still available. Check the main page to browse cached content.</p>
+        </div>
+    </div>
+    
+    <script>
+        function retryConnection() {
+            if (navigator.onLine) {
+                window.location.href = '/news-enhanced.html';
+            } else {
+                // Show a message that we're still offline
+                alert('Still offline. Please check your internet connection.');
+            }
+        }
+        
+        // Listen for online event
+        window.addEventListener('online', () => {
+            window.location.href = '/news-enhanced.html';
+        });
+        
+        // Check if we have cached content
+        if ('caches' in window) {
+            caches.open('news-feeds-v2').then(cache => {
+                cache.keys().then(requests => {
+                    if (requests.length > 0) {
+                        console.log('📦 Found cached content:', requests.length, 'items');
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html> 

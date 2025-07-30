@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="Picsart_25-03-28_15-20-40-059.png">
+    <title>Our Apps - A.Insiders</title>
+    <meta name="description" content="Discover our innovative AI-powered applications and tools designed to empower businesses and individuals.">
+    <meta name="keywords" content="apps, AI apps, tools, software, applications, AI tools">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="nuroback-styles.css">
+    
+    <!-- Security Protection -->
+    <script src="security-protection.js"></script>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Page Transition System -->
+
+    
+    <style>
+        /* Apps Page Specific Styles */
+        .apps-hero {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(10, 10, 10, 0.9));
+            padding: 4rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .apps-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 102, 255, 0.1) 0%, rgba(0, 102, 255, 0.05) 30%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        .apps-hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .apps-hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .apps-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+        
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .app-card {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            transition: var(--transition-smooth);
+            position: relative;
+            box-shadow: var(--shadow-dark);
+        }
+        
+        .app-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-glow);
+        }
+        
+        .app-image {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.1), rgba(77, 148, 255, 0.1));
+        }
+        
+        .app-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition-smooth);
+        }
+        
+        .app-card:hover .app-image img {
+            transform: scale(1.05);
+        }
+        
+        .app-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--accent-primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .app-content {
+            padding: 1.5rem;
+        }
+        
+        .app-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+            color: var(--text-primary);
+        }
+        
+        .app-content p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .app-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .app-feature {
+            background: rgba(0, 102, 255, 0.1);
+            color: var(--accent-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .app-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .app-actions .btn {
+            flex: 1;
+            padding: 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        .app-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        
+        .app-version {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .app-version i {
+            color: var(--accent-primary);
+        }
+        
+        .app-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-indicator.beta {
+            background: #ffaa00;
+        }
+        
+        .status-indicator.development {
+            background: #ff6b6b;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.1);
+            }
+        }
+        
+
+
+        .coming-soon-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-primary);
+            font-size: 3rem;
+            opacity: 0.8;
+        }
+
+        .coming-soon-card {
+            border: 2px dashed var(--border-color);
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .coming-soon-card:hover {
+            border-color: var(--accent-primary);
+            background: rgba(0, 0, 0, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .apps-hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .apps-stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .apps-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .app-actions {
+                flex-direction: column;
+            }
+            
+
+        }
+    </style>
+</head>
+<body>
+
+
+  <!-- Loader -->
+  <div id="loader" class="loader">
+        <div class="loader-content">
+            <div class="ai-loader">
+                <div class="ai-node"></div>
+                <div class="ai-node"></div>
+                <div class="ai-node"></div>
+                <div class="ai-node"></div>
+                <div class="ai-node"></div>
+                <div class="ai-node"></div>
+            </div>
+            <div class="loader-text">Initializing Startup</div>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            <div class="loading-percentage">0%</div>
+        </div>
+    </div>
+
+    <!-- Website Content -->
+    <div id="website-content" class="website-content">
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="Picsart_25-03-28_15-20-40-059.png" alt="A.Insiders Logo" class="logo-image" width="40" height="40">
+                <span class="logo-text">A.I</span>
+                <span class="logo-accent">NSIDERS</span>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li class="nav-item">
+                    <a href="home.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-dropdown">
+                    <a href="news-enhanced.html" class="nav-link">News</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="news-enhanced.html?category=AI" class="dropdown-link">AI</a></li>
+                        <li><a href="news-enhanced.html?category=Cybersecurity" class="dropdown-link">Cybersecurity</a></li>
+                        <li><a href="news-enhanced.html?category=Space" class="dropdown-link">Space</a></li>
+                        <li><a href="news-enhanced.html?category=Robotics" class="dropdown-link">Robotics</a></li>
+                        <li><a href="news-enhanced.html?category=Bioengineering" class="dropdown-link">Bioengineering</a></li>
+                        <li><a href="news-enhanced.html?category=Transportation" class="dropdown-link">Transportation</a></li>
+                        <li><a href="news-enhanced.html?category=Marketing" class="dropdown-link">Marketing</a></li>
+                        <li><a href="news-enhanced.html?category=Matrix" class="dropdown-link">Matrix</a></li>
+                        <li><a href="news-enhanced.html?category=NEW TECH" class="dropdown-link">New Tech</a></li>
+                        <li><a href="news-enhanced.html?category=Open AI" class="dropdown-link">Open AI</a></li>
+                        <li><a href="news-enhanced.html?category=Phones" class="dropdown-link">Phones</a></li>
+                        <li><a href="news-enhanced.html?category=Tech Reviews" class="dropdown-link">Tech Reviews</a></li>
+            
+                        <li><a href="news-enhanced.html?category=Video Games" class="dropdown-link">Video Games</a></li>
+                        <li><a href="news-enhanced.html?category=Crypto" class="dropdown-link">Crypto</a></li>
+                        <li><a href="news-enhanced.html?category=CRM Tools" class="dropdown-link">CRM Tools</a></li>
+                        <li><a href="news-enhanced.html?category=Flipper" class="dropdown-link">Flipper</a></li>
+                        <li><a href="news-enhanced.html?category=Matrix FUTURE" class="dropdown-link">Matrix Future</a></li>
+                        <li><a href="news-enhanced.html?category=Trends" class="dropdown-link">Trends</a></li>
+                    </ul>
+                </li>
+                <li><a href="apps.html" class="nav-link active">Apps</a></li>
+                <li><a href="daily-updates.html" class="nav-link">Daily Updates</a></li>
+
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Apps Hero Section -->
+    <section class="apps-hero">
+        <div class="container">
+            <h1>Our Applications</h1>
+            <p>Discover our innovative AI-powered tools and applications designed to transform how you work and create.</p>
+            
+            <div class="apps-stats">
+                <div class="stat-item">
+                    <div class="stat-number">2</div>
+                    <div class="stat-label">Current Apps</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Apps Grid -->
+    <section class="apps-listing">
+        <div class="container">
+            <div class="apps-grid" id="apps-container">
+                <!-- A.Insiders News -->
+                <div class="app-card" id="news-app" data-category="news">
+                    <div class="app-image">
+                        <img src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&h=200&fit=crop" alt="A.Insiders News">
+                        <div class="app-badge">Live</div>
+                    </div>
+                    <div class="app-content">
+                        <div class="app-meta">
+                            <div class="app-version">
+                                <i class="fas fa-code-branch"></i>
+                                <span>v1.0.0</span>
+                            </div>
+                            <div class="app-status">
+                                <div class="status-indicator"></div>
+                                <span>Production</span>
+                            </div>
+                        </div>
+                        <h3>A.Insiders News</h3>
+                        <p>Comprehensive AI-powered news aggregator featuring the latest developments in artificial intelligence, cybersecurity, space exploration, robotics, and cutting-edge technology.</p>
+                        <div class="app-features">
+                            <span class="app-feature">AI News</span>
+                            <span class="app-feature">Real-time Updates</span>
+                            <span class="app-feature">Multiple Categories</span>
+                            <span class="app-feature">Smart Filtering</span>
+                        </div>
+                        <div class="app-actions">
+                            <a href="news-enhanced.html" class="btn btn-primary">
+                                <i class="fas fa-external-link-alt"></i> Visit App
+                            </a>
+                            <a href="about.html" class="btn btn-secondary">
+                                <i class="fas fa-info-circle"></i> Learn More
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mocking Bird -->
+                <div class="app-card" id="mocking-bird" data-category="security">
+                    <div class="app-image">
+                        <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&h=200&fit=crop" alt="Mocking Bird">
+                        <div class="app-badge">Live</div>
+                    </div>
+                    <div class="app-content">
+                        <div class="app-meta">
+                            <div class="app-version">
+                                <i class="fas fa-code-branch"></i>
+                                <span>v1.2.0</span>
+                            </div>
+                            <div class="app-status">
+                                <div class="status-indicator"></div>
+                                <span>Production</span>
+                            </div>
+                        </div>
+                        <h3>Mocking Bird</h3>
+                        <p>Advanced Android location spoofing application designed for privacy protection and security testing. Features precise GPS manipulation and stealth operation.</p>
+                        <div class="app-features">
+                            <span class="app-feature">Location Spoofing</span>
+                            <span class="app-feature">Privacy Protection</span>
+                            <span class="app-feature">Stealth Mode</span>
+                            <span class="app-feature">Android Compatible</span>
+                        </div>
+                        <div class="app-actions">
+                            <a href="contact.html" class="btn btn-primary">
+                                <i class="fas fa-download"></i> Get Access
+                            </a>
+                            <a href="contact.html" class="btn btn-secondary">
+                                <i class="fas fa-question-circle"></i> Support
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- More Apps Coming Soon -->
+                <div class="app-card coming-soon-card" data-category="future">
+                    <div class="app-image">
+                        <div class="coming-soon-placeholder">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <div class="app-badge">Coming Soon</div>
+                    </div>
+                    <div class="app-content">
+                        <div class="app-meta">
+                            <div class="app-version">
+                                <i class="fas fa-clock"></i>
+                                <span>In Development</span>
+                            </div>
+                            <div class="app-status">
+                                <div class="status-indicator development"></div>
+                                <span>Planning</span>
+                            </div>
+                        </div>
+                        <h3>More Apps Coming Soon</h3>
+                        <p>We're actively developing new AI-powered applications to expand our ecosystem. Stay tuned for innovative tools that will revolutionize how you work and create.</p>
+                        <div class="app-features">
+                            <span class="app-feature">AI Tools</span>
+                            <span class="app-feature">Productivity</span>
+                            <span class="app-feature">Security</span>
+                            <span class="app-feature">Analytics</span>
+                        </div>
+                        <div class="app-actions">
+                            <a href="contact.html" class="btn btn-primary">
+                                <i class="fas fa-bell"></i> Get Notified
+                            </a>
+                            <a href="contact.html" class="btn btn-secondary">
+                                <i class="fas fa-lightbulb"></i> Suggest Ideas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span class="logo-text">A.I</span>
+                        <span class="logo-accent">NSIDERS</span>
+                    </div>
+                    <p>Leading source for AI and cybersecurity intelligence</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Apps</h4>
+                    <ul>
+                        <li><a href="apps.html#news-app">A.Insiders News</a></li>
+                        <li><a href="apps.html#mocking-bird">Mocking Bird</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Explore</h4>
+                    <ul>
+                        <li><a href="apps.html">Apps</a></li>
+                        <li><a href="daily-updates.html">Daily Updates</a></li>
+                        <li><a href="news-enhanced.html">News</a></li>
+                        
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="https://discord.gg/Y4kCtaBZFM" class="social-link discord-link" target="_blank" rel="noopener noreferrer">
+                            <i class="fab fa-discord"></i>
+                            <span>Join Discord</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2016 A.Insiders. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    </div> <!-- End of website-content -->
+
+
+    <script src="nuroback-script.js"></script>
+    <script>
+        // Apps page specific functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add smooth animations to app cards
+            const appCards = document.querySelectorAll('.app-card');
+            
+            appCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.2}s`;
+                card.classList.add('fade-section');
+                
+                // Trigger animation when card comes into view
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                        }
+                    });
+                });
+                
+                observer.observe(card);
+            });
+            
+            // Newsletter form
+            const newsletterForm = document.getElementById('newsletter-form');
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const email = this.querySelector('input[type="email"]').value;
+                    // Add newsletter subscription logic here
+                    alert('Thank you for subscribing to our newsletter!');
+                    this.reset();
+                });
+            }
+        });
+    </script>
+</body>
+</html> 
