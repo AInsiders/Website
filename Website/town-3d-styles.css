@@ -1,0 +1,245 @@
+/* Futuristic Animated Text Styles - Non-Interactive */
+#Town {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.hero-title {
+  position: relative;
+  z-index: 100;
+  text-align: center;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.hero-title .title-line {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0.8rem 0;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.hero-title span {
+  position: relative;
+  display: inline-block;
+  margin: 0 0.15rem;
+  padding: 0.6rem 0.9rem;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #00ffff;
+  background: linear-gradient(135deg, 
+    rgba(0, 255, 255, 0.1), 
+    rgba(0, 100, 255, 0.05),
+    rgba(255, 0, 255, 0.1)
+  );
+  border: 2px solid #00ffff;
+  border-radius: 8px;
+  transform-style: preserve-3d;
+  transform: translateZ(0);
+  transition: all 0.4s ease;
+  cursor: default;
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 0 20px rgba(0, 255, 255, 0.3),
+    inset 0 0 20px rgba(0, 255, 255, 0.1);
+  animation: textGlow 3s ease-in-out infinite alternate;
+  overflow: hidden;
+}
+
+/* Electrical circuit animation */
+.hero-title span::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(0, 255, 255, 0.4), 
+    rgba(255, 0, 255, 0.4), 
+    transparent
+  );
+  animation: circuitFlow 4s linear infinite;
+  z-index: 1;
+}
+
+/* Circuit nodes */
+.hero-title span::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  background: #00ffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 
+    0 0 10px #00ffff,
+    0 0 20px #00ffff,
+    0 0 30px #00ffff;
+  animation: nodePulse 2s ease-in-out infinite;
+  z-index: 2;
+}
+
+/* Holographic effect */
+.hero-title span .hologram {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(0, 255, 255, 0.1) 50%, 
+    transparent 70%
+  );
+  animation: hologramShift 5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Text glow animation */
+@keyframes textGlow {
+  0% {
+    box-shadow: 
+      0 0 20px rgba(0, 255, 255, 0.3),
+      inset 0 0 20px rgba(0, 255, 255, 0.1);
+    color: #00ffff;
+  }
+  50% {
+    box-shadow: 
+      0 0 30px rgba(0, 255, 255, 0.5),
+      inset 0 0 30px rgba(0, 255, 255, 0.2);
+    color: #ffffff;
+  }
+  100% {
+    box-shadow: 
+      0 0 25px rgba(255, 0, 255, 0.4),
+      inset 0 0 25px rgba(255, 0, 255, 0.15);
+    color: #ff00ff;
+  }
+}
+
+/* Circuit flow animation */
+@keyframes circuitFlow {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Node pulse animation */
+@keyframes nodePulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 1;
+  }
+}
+
+/* Hologram shift animation */
+@keyframes hologramShift {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateX(5px);
+  }
+}
+
+/* Staggered animation for letters */
+.hero-title span:nth-child(1) { animation-delay: 0s; }
+.hero-title span:nth-child(2) { animation-delay: 0.1s; }
+.hero-title span:nth-child(3) { animation-delay: 0.2s; }
+.hero-title span:nth-child(4) { animation-delay: 0.3s; }
+.hero-title span:nth-child(5) { animation-delay: 0.4s; }
+.hero-title span:nth-child(6) { animation-delay: 0.5s; }
+.hero-title span:nth-child(7) { animation-delay: 0.6s; }
+.hero-title span:nth-child(8) { animation-delay: 0.7s; }
+.hero-title span:nth-child(9) { animation-delay: 0.8s; }
+.hero-title span:nth-child(10) { animation-delay: 0.9s; }
+.hero-title span:nth-child(11) { animation-delay: 1s; }
+.hero-title span:nth-child(12) { animation-delay: 1.1s; }
+.hero-title span:nth-child(13) { animation-delay: 1.2s; }
+.hero-title span:nth-child(14) { animation-delay: 1.3s; }
+.hero-title span:nth-child(15) { animation-delay: 1.4s; }
+.hero-title span:nth-child(16) { animation-delay: 1.5s; }
+.hero-title span:nth-child(17) { animation-delay: 1.6s; }
+.hero-title span:nth-child(18) { animation-delay: 1.7s; }
+.hero-title span:nth-child(19) { animation-delay: 1.8s; }
+.hero-title span:nth-child(20) { animation-delay: 1.9s; }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-title span {
+    font-size: 1.6rem;
+    padding: 0.4rem 0.7rem;
+    margin: 0 0.1rem;
+  }
+  
+  .hero-title .title-line {
+    margin: 0.6rem 0;
+    gap: 0.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title span {
+    font-size: 1.2rem;
+    padding: 0.3rem 0.5rem;
+    margin: 0 0.05rem;
+  }
+  
+  .hero-title .title-line {
+    margin: 0.4rem 0;
+    gap: 0.15rem;
+  }
+}
+
+/* Ensure proper spacing and centering */
+.hero-content {
+  position: relative;
+  z-index: 200;
+  text-align: center;
+  pointer-events: auto;
+}
+
+.hero-tagline {
+  position: relative;
+  z-index: 150;
+  pointer-events: none;
+}
+
+.hero-subtitle {
+  position: relative;
+  z-index: 150;
+  pointer-events: none;
+}
+
+.cta-button {
+  position: relative;
+  z-index: 150;
+  pointer-events: auto;
+} 

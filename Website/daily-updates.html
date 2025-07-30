@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="Picsart_25-03-28_15-20-40-059.png">
+    <title>Daily Updates - A.Insiders</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="nuroback-styles.css">
+    
+    <!-- Security Protection -->
+    <script src="security-protection.js"></script>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Page Transition System -->
+
+    
+    <style>
+        .daily-updates-hero {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            padding: 120px 0 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .daily-updates-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 102, 255, 0.1) 0%, rgba(0, 102, 255, 0.05) 30%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        .daily-updates-hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .daily-updates-hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .daily-updates-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .daily-updates-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        
+        .daily-updates-filters {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+        
+        .date-filter {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            font-family: var(--font-primary);
+            font-size: 0.9rem;
+        }
+        
+        .date-filter:hover,
+        .date-filter.active {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-glow);
+        }
+        
+        .daily-post {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-dark);
+            transition: var(--transition-smooth);
+        }
+        
+        .daily-post:hover {
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-2px);
+        }
+        
+        .daily-post-header {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-blue) 100%);
+            color: var(--bg-primary);
+            padding: 1.5rem 2rem;
+            position: relative;
+        }
+        
+        .daily-post-date {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .daily-post-meta {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .daily-post-content {
+            padding: 2rem;
+        }
+        
+        .daily-feed-item {
+            border-left: 3px solid var(--accent-primary);
+            padding: 1rem 0 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            background: rgba(0, 123, 255, 0.05);
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            transition: var(--transition-smooth);
+        }
+        
+        .daily-feed-item:hover {
+            background: rgba(0, 123, 255, 0.1);
+            border-left-color: var(--accent-blue);
+        }
+        
+        .daily-feed-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .feed-item-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .feed-source-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-primary);
+            font-size: 0.8rem;
+        }
+        
+        .feed-source-name {
+            font-weight: 600;
+            color: var(--accent-primary);
+            font-size: 0.9rem;
+        }
+        
+        .feed-time {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        
+        .feed-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+        
+        .feed-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+        
+        .feed-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        
+        .feed-btn {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .feed-btn:hover {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+        }
+        
+        .feed-btn.primary {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+        }
+        
+        .feed-btn.primary:hover {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        
+        .loading-spinner i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--accent-primary);
+        }
+        
+        .no-updates {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        
+        .no-updates i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+        
+        .discord-webhook-status {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .webhook-status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            animation: pulse 2s infinite;
+        }
+        
+        .webhook-status-indicator.offline {
+            background: var(--text-muted);
+            animation: none;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-glow);
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-blue) 100%);
+            color: var(--bg-primary);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--bg-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: var(--transition-smooth);
+        }
+        
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        .update-meta {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+        
+        .update-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .update-meta i {
+            color: var(--accent-primary);
+        }
+        
+        .update-content {
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        
+        .update-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .daily-updates-hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .daily-updates-stats {
+                gap: 2rem;
+            }
+            
+            .daily-updates-filters {
+                gap: 0.5rem;
+            }
+            
+            .date-filter {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            
+            .daily-post-header {
+                padding: 1rem 1.5rem;
+            }
+            
+            .daily-post-content {
+                padding: 1.5rem;
+            }
+            
+            .feed-actions {
+                flex-direction: column;
+            }
+            
+            .feed-btn {
+                justify-content: center;
+            }
+            
+            .modal-content {
+                width: 95%;
+                max-height: 90vh;
+            }
+            
+            .modal-header {
+                padding: 1rem 1.5rem;
+            }
+            
+            .modal-body {
+                padding: 1.5rem;
+            }
+            
+            .update-meta {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+    <!-- Loading Screen -->
+    <div class="loader" id="loader">
+        <div class="loader-content">
+            <div class="ai-loader" id="ai-loader">
+                <i class="fas fa-brain"></i>
+            </div>
+            <div class="loader-text">
+                <h3>Initializing Daily Updates</h3>
+                <p>Connecting to Discord webhook...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Website Content -->
+    <div id="website-content" class="website-content">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <img src="Picsart_25-03-28_15-20-40-059.png" alt="A.Insiders Logo" class="logo-image" width="30" height="30">
+                    <span class="logo-text">A.I</span>
+                    <span class="logo-accent">NSIDERS</span>
+                </div>
+                <ul class="nav-menu" id="nav-menu">
+                    <li class="nav-item">
+                        <a href="home.html" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-dropdown">
+                        <a href="news-enhanced.html" class="nav-link">News</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="news-enhanced.html?category=AI" class="dropdown-link">AI</a></li>
+                            <li><a href="news-enhanced.html?category=Cybersecurity" class="dropdown-link">Cybersecurity</a></li>
+                            <li><a href="news-enhanced.html?category=Space" class="dropdown-link">Space</a></li>
+                            <li><a href="news-enhanced.html?category=Robotics" class="dropdown-link">Robotics</a></li>
+                            <li><a href="news-enhanced.html?category=Bioengineering" class="dropdown-link">Bioengineering</a></li>
+                            <li><a href="news-enhanced.html?category=Transportation" class="dropdown-link">Transportation</a></li>
+                            <li><a href="news-enhanced.html?category=Marketing" class="dropdown-link">Marketing</a></li>
+                            <li><a href="news-enhanced.html?category=Matrix" class="dropdown-link">Matrix</a></li>
+                            <li><a href="news-enhanced.html?category=NEW TECH" class="dropdown-link">New Tech</a></li>
+                            <li><a href="news-enhanced.html?category=Open AI" class="dropdown-link">Open AI</a></li>
+                            <li><a href="news-enhanced.html?category=Phones" class="dropdown-link">Phones</a></li>
+                            <li><a href="news-enhanced.html?category=Tech Reviews" class="dropdown-link">Tech Reviews</a></li>
+                
+                            <li><a href="news-enhanced.html?category=Video Games" class="dropdown-link">Video Games</a></li>
+                            <li><a href="news-enhanced.html?category=Crypto" class="dropdown-link">Crypto</a></li>
+                            <li><a href="news-enhanced.html?category=CRM Tools" class="dropdown-link">CRM Tools</a></li>
+                            <li><a href="news-enhanced.html?category=Flipper" class="dropdown-link">Flipper</a></li>
+                            <li><a href="news-enhanced.html?category=Matrix FUTURE" class="dropdown-link">Matrix Future</a></li>
+                            <li><a href="news-enhanced.html?category=Trends" class="dropdown-link">Trends</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="apps.html" class="nav-link">Apps</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="daily-updates.html" class="nav-link active">Daily Updates</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="about.html" class="nav-link">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="contact.html" class="nav-link">Contact</a>
+                    </li>
+                </ul>
+                <div class="nav-toggle" id="nav-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="daily-updates-hero">
+            <div class="container">
+                <h1>Daily Updates</h1>
+                <p>Stay informed with the latest AI and cybersecurity developments, curated and delivered daily through our Discord integration.</p>
+                
+                <div class="daily-updates-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="total-updates">0</span>
+                        <span class="stat-label">Total Updates</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="days-covered">0</span>
+                        <span class="stat-label">Days Covered</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="latest-update">-</span>
+                        <span class="stat-label">Latest Update</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <div class="daily-updates-container">
+            <!-- Discord Webhook Status -->
+            <div class="discord-webhook-status">
+                <div class="webhook-status-indicator" id="webhook-status"></div>
+                <div>
+                    <strong>Discord Webhook Status:</strong>
+                    <span id="webhook-status-text">Connecting...</span>
+                </div>
+            </div>
+
+            <!-- Date Filters -->
+            <div class="daily-updates-filters" id="date-filters">
+                <button class="date-filter active" data-date="all">All Updates</button>
+                <!-- Date filters will be populated dynamically -->
+            </div>
+
+            <!-- Updates Container -->
+            <div id="daily-updates-container">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading daily updates...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <div class="footer-logo">
+                            <span class="logo-text">A.I</span>
+                            <span class="logo-accent">NSIDERS</span>
+                        </div>
+                        <p>Leading source for AI and cybersecurity intelligence</p>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Apps</h4>
+                        <ul>
+                            <li><a href="apps.html#news-app">A.Insiders News</a></li>
+                            <li><a href="apps.html#mocking-bird">Mocking Bird</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Explore</h4>
+                        <ul>
+                            <li><a href="apps.html">Apps</a></li>
+                            <li><a href="daily-updates.html">Daily Updates</a></li>
+                            <li><a href="news-enhanced.html">News</a></li>
+                            
+                            <li><a href="contact.html">Contact</a></li>
+                            <li><a href="about.html">About Us</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Connect</h4>
+                        <div class="social-links">
+                            <a href="https://discord.gg/Y4kCtaBZFM" class="social-link discord-link" target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-discord"></i>
+                                <span>Join Discord</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2016 A.Insiders. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div> <!-- End of website-content -->
+
+    <!-- JavaScript -->
+    <script src="nuroback-script.js"></script>
+    
+    <script src="daily-updates.js"></script>
+  </body>
+</html> 
