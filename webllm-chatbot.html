@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A.Insiders - AI Cybersecurity Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #334155;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2563eb;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #94a3b8;
+            margin-top: 0.5rem;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 2rem;
+        }
+
+        .status-bar {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #6b7280;
+        }
+
+        .status-indicator.loading {
+            background: #f59e0b;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.ready {
+            background: #10b981;
+        }
+
+        .status-indicator.error {
+            background: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: rgba(37, 99, 235, 0.1);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .chat-header i {
+            color: #2563eb;
+            font-size: 1.2rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+
+        .message {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: #2563eb;
+            color: white;
+        }
+
+        .message.assistant .message-avatar {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .message-content {
+            background: rgba(51, 65, 85, 0.5);
+            border: 1px solid #475569;
+            border-radius: 12px;
+            padding: 1rem;
+            max-width: 80%;
+            line-height: 1.6;
+        }
+
+        .message.user .message-content {
+            background: rgba(37, 99, 235, 0.2);
+            border-color: #3b82f6;
+        }
+
+        .message.assistant .message-content {
+            background: rgba(124, 58, 237, 0.2);
+            border-color: #8b5cf6;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: rgba(51, 65, 85, 0.5);
+            border: 1px solid #475569;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #64748b;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .chat-input-container {
+            padding: 1.5rem;
+            border-top: 1px solid #334155;
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(51, 65, 85, 0.5);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 1rem;
+            color: #f8fafc;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: none;
+            min-height: 50px;
+            max-height: 120px;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .chat-input::placeholder {
+            color: #64748b;
+        }
+
+        .send-button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .send-button:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .send-button:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .model-info {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .model-info h3 {
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+        }
+
+        .model-info p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .loading-progress {
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .loading-bar {
+            background: linear-gradient(90deg, #2563eb, #7c3aed);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+            
+            .message-content {
+                max-width: 90%;
+            }
+            
+            .chat-input-wrapper {
+                flex-direction: column;
+            }
+            
+            .send-button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-shield-alt"></i> A.Insiders AI Assistant</h1>
+        <p>Powered by WebLLM - Cybersecurity Intelligence & Analysis</p>
+    </div>
+
+    <div class="main-container">
+        <div class="status-bar">
+            <div class="status-indicator" id="status-indicator"></div>
+            <div id="status-text">Initializing AI model...</div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <i class="fas fa-robot"></i>
+                <div>
+                    <h3>Cybersecurity AI Assistant</h3>
+                    <p>Ask me about AI, cybersecurity, emerging threats, and technological insights</p>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <div class="message assistant">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Hello! I'm your AI cybersecurity assistant. I'm currently loading my knowledge base to provide you with expert insights on AI, cybersecurity, emerging threats, and technological developments.</p>
+                        <p>Please wait while I initialize...</p>
+                        <div class="message-time" id="init-time"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <textarea 
+                        class="chat-input" 
+                        id="chat-input" 
+                        placeholder="Ask me about cybersecurity, AI threats, emerging technologies..."
+                        rows="1"
+                        disabled
+                    ></textarea>
+                    <button class="send-button" id="send-button" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="model-info">
+            <h3><i class="fas fa-info-circle"></i> Model Information</h3>
+            <p>This AI assistant runs entirely in your browser using WebLLM technology. No data is sent to external servers, ensuring complete privacy and security.</p>
+            <div class="loading-progress" id="loading-progress" style="display: none;">
+                <div class="loading-bar" id="loading-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import WebLLM
+        import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
+
+        class WebLLMChatbot {
+            constructor() {
+                this.engine = null;
+                this.isReady = false;
+                this.isLoading = false;
+                this.messages = [];
+                
+                this.statusIndicator = document.getElementById('status-indicator');
+                this.statusText = document.getElementById('status-text');
+                this.chatMessages = document.getElementById('chat-messages');
+                this.chatInput = document.getElementById('chat-input');
+                this.sendButton = document.getElementById('send-button');
+                this.loadingProgress = document.getElementById('loading-progress');
+                this.loadingBar = document.getElementById('loading-bar');
+                
+                this.init();
+            }
+
+            async init() {
+                this.updateStatus('loading', 'Loading AI model...');
+                this.loadingProgress.style.display = 'block';
+                
+                try {
+                    // Initialize the MLCEngine with a smaller model for better performance
+                    this.engine = await CreateMLCEngine("Llama-3.1-8B-Instruct", {
+                        model_lib_path: "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/web-llm/",
+                        onProgress: (progress) => {
+                            this.updateLoadingProgress(progress);
+                        }
+                    });
+
+                    this.isReady = true;
+                    this.updateStatus('ready', 'AI Assistant Ready');
+                    this.loadingProgress.style.display = 'none';
+                    
+                    // Enable chat interface
+                    this.chatInput.disabled = false;
+                    this.sendButton.disabled = false;
+                    
+                    // Add welcome message
+                    this.addMessage('assistant', 'Hello! I\'m your AI cybersecurity assistant, powered by WebLLM. I can help you with:\n\n• Cybersecurity threats and vulnerabilities\n• AI security and ethical considerations\n• Emerging technologies and their security implications\n• Critical analysis of mainstream narratives\n• Technical insights and research\n\nWhat would you like to know about?');
+                    
+                    // Set up event listeners
+                    this.setupEventListeners();
+                    
+                } catch (error) {
+                    console.error('Failed to initialize WebLLM:', error);
+                    this.updateStatus('error', 'Failed to load AI model');
+                    this.addMessage('assistant', 'Sorry, I encountered an error while loading my AI model. Please refresh the page and try again.');
+                }
+            }
+
+            updateStatus(type, text) {
+                this.statusIndicator.className = `status-indicator ${type}`;
+                this.statusText.textContent = text;
+            }
+
+            updateLoadingProgress(progress) {
+                if (progress && progress.progress) {
+                    const percentage = Math.round(progress.progress * 100);
+                    this.loadingBar.style.width = `${percentage}%`;
+                    this.statusText.textContent = `Loading AI model... ${percentage}%`;
+                }
+            }
+
+            setupEventListeners() {
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                
+                this.chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                // Auto-resize textarea
+                this.chatInput.addEventListener('input', () => {
+                    this.chatInput.style.height = 'auto';
+                    this.chatInput.style.height = Math.min(this.chatInput.scrollHeight, 120) + 'px';
+                });
+            }
+
+            async sendMessage() {
+                const message = this.chatInput.value.trim();
+                if (!message || this.isLoading) return;
+
+                this.addMessage('user', message);
+                this.chatInput.value = '';
+                this.chatInput.style.height = 'auto';
+                
+                this.isLoading = true;
+                this.sendButton.disabled = true;
+                this.chatInput.disabled = true;
+                
+                this.showTypingIndicator();
+
+                try {
+                    const response = await this.getAIResponse(message);
+                    this.hideTypingIndicator();
+                    this.addMessage('assistant', response);
+                } catch (error) {
+                    console.error('Error getting AI response:', error);
+                    this.hideTypingIndicator();
+                    this.addMessage('assistant', 'Sorry, I encountered an error while processing your request. Please try again.');
+                } finally {
+                    this.isLoading = false;
+                    this.sendButton.disabled = false;
+                    this.chatInput.disabled = false;
+                    this.chatInput.focus();
+                }
+            }
+
+            async getAIResponse(userMessage) {
+                const systemPrompt = {
+                    role: "system",
+                    content: `You are a seasoned cybersecurity expert and AI analyst for A.Insiders, a company focused on AI and cybersecurity news and information. 
+
+Your role is to provide insightful, evidence-based analysis on:
+- Cybersecurity threats, vulnerabilities, and emerging risks
+- AI security, ethical considerations, and potential risks
+- Critical examination of mainstream narratives and claims
+- Emerging technologies and their security implications
+- Technical insights and research findings
+
+Guidelines:
+- Be informative, professional, and thorough
+- Encourage critical thinking and evidence-based analysis
+- When discussing controversial topics, present multiple perspectives
+- Always recommend cross-checking information with reputable sources
+- Focus on factual analysis rather than speculation
+- Be honest about limitations and uncertainties
+
+Current context: The user is on the A.Insiders website seeking expert insights on AI and cybersecurity topics.`
+                };
+
+                const messages = [
+                    systemPrompt,
+                    ...this.messages.map(msg => ({
+                        role: msg.type === 'user' ? 'user' : 'assistant',
+                        content: msg.content
+                    })),
+                    { role: 'user', content: userMessage }
+                ];
+
+                const reply = await this.engine.chat.completions.create({
+                    messages: messages,
+                    stream: false,
+                    temperature: 0.7,
+                    max_tokens: 1000
+                });
+
+                return reply.choices[0].message.content;
+            }
+
+            addMessage(type, content) {
+                const message = {
+                    type,
+                    content,
+                    timestamp: new Date()
+                };
+                
+                this.messages.push(message);
+                this.renderMessage(message);
+                this.scrollToBottom();
+            }
+
+            renderMessage(message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${message.type}`;
+                
+                const time = message.timestamp.toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">
+                        ${message.type === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>'}
+                    </div>
+                    <div class="message-content">
+                        <div>${this.formatMessage(message.content)}</div>
+                        <div class="message-time">${time}</div>
+                    </div>
+                `;
+                
+                this.chatMessages.appendChild(messageDiv);
+            }
+
+            formatMessage(content) {
+                return content
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\n/g, '<br>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>');
+            }
+
+            showTypingIndicator() {
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'message assistant';
+                typingDiv.id = 'typing-indicator';
+                typingDiv.innerHTML = `
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                `;
+                this.chatMessages.appendChild(typingDiv);
+                this.scrollToBottom();
+            }
+
+            hideTypingIndicator() {
+                const typingIndicator = document.getElementById('typing-indicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+            }
+
+            scrollToBottom() {
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+        }
+
+        // Initialize the chatbot when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new WebLLMChatbot();
+        });
+    </script>
+</body>
+</html> 

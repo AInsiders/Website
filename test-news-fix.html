@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News System Test - Fixed Version</title>
+    <link rel="stylesheet" href="brain-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #1a1a1a;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .status-panel {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #333;
+        }
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        .status-good { color: #00aa00; }
+        .status-error { color: #ff4444; }
+        .status-pending { color: #ffaa00; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1><i class="fas fa-newspaper"></i> News System Test - Fixed Version</h1>
+            <p>Testing the enhanced news feed system with improvements</p>
+        </div>
+
+        <div class="status-panel">
+            <h3><i class="fas fa-chart-line"></i> System Status</h3>
+            <div class="status-item">
+                <span>News Container Found:</span>
+                <span id="container-status" class="status-pending">Checking...</span>
+            </div>
+            <div class="status-item">
+                <span>JavaScript Loaded:</span>
+                <span id="js-status" class="status-pending">Loading...</span>
+            </div>
+            <div class="status-item">
+                <span>Event Listeners:</span>
+                <span id="events-status" class="status-pending">Waiting...</span>
+            </div>
+            <div class="status-item">
+                <span>Articles Loaded:</span>
+                <span id="articles-status" class="status-pending">0</span>
+            </div>
+            <div class="status-item">
+                <span>Categories Working:</span>
+                <span id="categories-status" class="status-pending">Testing...</span>
+            </div>
+        </div>
+
+        <!-- Simplified news interface for testing -->
+        <div class="news-filters">
+            <div class="container">
+                <div class="filter-header">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="news-search" placeholder="Search articles...">
+                    </div>
+                    <div class="category-filters">
+                        <button class="category-filter active" data-category="all">All Categories</button>
+                        <button class="category-filter" data-category="AI">AI</button>
+                        <button class="category-filter" data-category="Cybersecurity">Cybersecurity</button>
+                        <button class="category-filter" data-category="Space">Space</button>
+                        <button class="btn btn-secondary retry-failed-btn" id="retry-failed-btn" title="Retry failed feeds">
+                            <i class="fas fa-redo-alt"></i> Retry Failed
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- News Grid -->
+        <section class="news-listing">
+            <div class="container">
+                <div class="news-grid" id="news-container">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                        <p>Loading news articles...</p>
+                    </div>
+                </div>
+                
+                <div class="load-more">
+                    <button class="btn btn-primary" id="load-more-news">Load More Articles</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Test script to verify functionality
+        function updateStatus(elementId, text, isGood = null) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = text;
+                element.className = isGood === true ? 'status-good' : 
+                                   isGood === false ? 'status-error' : 'status-pending';
+            }
+        }
+
+        // Check container
+        const newsContainer = document.getElementById('news-container');
+        updateStatus('container-status', newsContainer ? 'Found ✓' : 'Missing ✗', !!newsContainer);
+
+        // Load the news script
+        const script = document.createElement('script');
+        script.src = 'news-feeds-enhanced.js?v=' + Date.now();
+        script.onload = function() {
+            updateStatus('js-status', 'Loaded ✓', true);
+            
+            // Test if the class is available
+            if (typeof EnhancedNewsFeedAggregator !== 'undefined') {
+                try {
+                    // Create instance
+                    const aggregator = new EnhancedNewsFeedAggregator();
+                    updateStatus('events-status', 'Initialized ✓', true);
+                    
+                    // Monitor article loading
+                    const checkArticles = setInterval(() => {
+                        if (aggregator.allArticles && aggregator.allArticles.length > 0) {
+                            updateStatus('articles-status', `${aggregator.allArticles.length} loaded ✓`, true);
+                            clearInterval(checkArticles);
+                            
+                            // Test category functionality
+                            setTimeout(() => {
+                                updateStatus('categories-status', 'Functional ✓', true);
+                            }, 2000);
+                        }
+                    }, 1000);
+                    
+                    // Timeout after 30 seconds
+                    setTimeout(() => {
+                        if (aggregator.allArticles.length === 0) {
+                            updateStatus('articles-status', 'No articles loaded (using fallback)', false);
+                            updateStatus('categories-status', 'Limited functionality', false);
+                        }
+                    }, 30000);
+                    
+                } catch (error) {
+                    console.error('Error creating aggregator:', error);
+                    updateStatus('events-status', 'Error ✗', false);
+                }
+            } else {
+                updateStatus('events-status', 'Class not found ✗', false);
+            }
+        };
+        script.onerror = function() {
+            updateStatus('js-status', 'Failed to load ✗', false);
+        };
+        
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

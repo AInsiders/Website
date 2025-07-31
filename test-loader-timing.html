@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loader Timing Test</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+    }
+    
+    .test-info {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 10000;
+      background: rgba(0,0,0,0.8);
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+    
+    .timeline {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      height: 60px;
+      background: rgba(0,0,0,0.8);
+      border-radius: 10px;
+      padding: 10px;
+      z-index: 10000;
+    }
+    
+    .timeline-bar {
+      width: 100%;
+      height: 20px;
+      background: #333;
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .timeline-progress {
+      height: 100%;
+      background: linear-gradient(90deg, #0066ff, #00ff66);
+      width: 0%;
+      transition: width 0.1s linear;
+      border-radius: 10px;
+    }
+    
+    .timeline-markers {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+    }
+    
+    .marker {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background: #fff;
+      opacity: 0.5;
+    }
+    
+    .marker.explosion { left: 0%; }
+    .marker.matrix-start { left: 33.33%; }
+    .marker.content-reveal { left: 58.33%; }
+    .marker.matrix-end { left: 100%; }
+    
+    .marker-label {
+      position: absolute;
+      top: -25px;
+      left: -20px;
+      font-size: 10px;
+      white-space: nowrap;
+      color: #fff;
+    }
+  </style>
+  <link rel="stylesheet" href="brain-styles.css">
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r157/three.min.js"></script>
+  <script src="threejs-light-ball.js"></script>
+  <script src="shared-loader.js"></script>
+</head>
+<body class="home-page">
+  <div class="test-info">
+    <h3>🌟 Magical Loader Animation Timeline</h3>
+    <p><strong>0ms:</strong> 3D Light explosion begins</p>
+    <p><strong>600ms:</strong> Matrix reveal starts</p>
+    <p><strong>800ms:</strong> Website content begins appearing</p>
+    <p><strong>1800ms:</strong> Matrix animation completes</p>
+    <p><strong>2100ms:</strong> Full transition complete</p>
+    <p><strong>✨ Features:</strong> Three.js 3D light ball, realistic explosion, black calm background, magical text reflections</p>
+  </div>
+  
+  <div class="timeline">
+    <div class="timeline-bar">
+      <div class="timeline-progress" id="progress"></div>
+      <div class="timeline-markers">
+        <div class="marker explosion">
+          <div class="marker-label">3D Explosion</div>
+        </div>
+        <div class="marker matrix-start">
+          <div class="marker-label">Matrix Start</div>
+        </div>
+        <div class="marker content-reveal">
+          <div class="marker-label">Content Appear</div>
+        </div>
+        <div class="marker matrix-end">
+          <div class="marker-label">Complete</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div id="loader" class="loader">
+    <div class="loader-content">
+      <div class="typing-text" id="typing-text"></div>
+      <div class="pulsing-light" id="pulsing-light"></div>
+      <div class="click-hint">Click anywhere to continue</div>
+    </div>
+  </div>
+
+  <!-- Website Content -->
+  <div id="website-content" class="website-content">
+    <div style="padding: 100px; text-align: center;">
+      <h1>Home Page Content</h1>
+      <p>This content should appear smoothly as the loader fades away.</p>
+    </div>
+  </div>
+
+  <script>
+    // Reset first visit flag for testing
+    localStorage.removeItem('hasVisitedHome');
+    
+    // Timeline progress tracking
+    let startTime = null;
+    const progressBar = document.getElementById('progress');
+    
+    // Override the startExplosionAnimation function to track timing
+    const originalStartExplosionAnimation = window.startExplosionAnimation;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      const loader = document.getElementById('loader');
+      
+      if (loader) {
+        loader.addEventListener('click', function() {
+          startTime = Date.now();
+          updateProgress();
+          
+          // Start the explosion animation
+          const pulsingLight = document.getElementById('pulsing-light');
+          const websiteContent = document.getElementById('website-content');
+          
+          if (pulsingLight) {
+            pulsingLight.classList.add('explode');
+          }
+          
+          loader.style.transform = 'scale(1.1)';
+          loader.style.filter = 'brightness(1.5)';
+          
+          setTimeout(() => {
+            loader.classList.add('reveal');
+            
+            setTimeout(() => {
+              if (websiteContent) {
+                websiteContent.classList.add('revealed');
+              }
+            }, 200);
+            
+            setTimeout(() => {
+              loader.style.display = 'none';
+              loader.style.visibility = 'hidden';
+              loader.style.opacity = '0';
+            }, 1300);
+          }, 600);
+        });
+      }
+    });
+    
+    function updateProgress() {
+      if (!startTime) return;
+      
+      const elapsed = Date.now() - startTime;
+      const totalDuration = 2100; // 2.1 seconds total for magical transition
+      const progress = Math.min((elapsed / totalDuration) * 100, 100);
+      
+      progressBar.style.width = progress + '%';
+      
+      if (progress < 100) {
+        requestAnimationFrame(updateProgress);
+      }
+    }
+  </script>
+</body>
+</html> 

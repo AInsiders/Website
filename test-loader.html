@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loader Test - A.Insiders</title>
+    <link rel="stylesheet" href="brain-styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="shared-loader.js"></script>
+    <style>
+        .test-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            z-index: 10000;
+        }
+        .test-controls button {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-controls button:hover {
+            background: var(--accent-blue);
+        }
+        .test-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div id="loader" class="loader">
+        <div class="loader-content">
+            <div class="ai-loader">
+                <div class="ai-node"></div>
+                <div class="ai-node"></div>
+                <div class="ai-node"></div>
+                <div class="ai-node"></div>
+                <div class="ai-node"></div>
+                <div class="ai-node"></div>
+            </div>
+            <div class="loader-text">Initializing Startup</div>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            <div class="loading-percentage">0%</div>
+        </div>
+    </div>
+
+    <!-- Test Controls -->
+    <div class="test-controls">
+        <h3>Loader Test Controls</h3>
+        <button onclick="resetFirstVisit()">Reset First Visit</button>
+        <button onclick="location.reload()">Reload Page</button>
+        <button onclick="clearStorage()">Clear All Storage</button>
+        <div class="test-info">
+            <p>Current path: <span id="current-path"></span></p>
+            <p>Has visited: <span id="has-visited"></span></p>
+            <p>Loader visible: <span id="loader-visible"></span></p>
+        </div>
+    </div>
+
+    <!-- Website Content -->
+    <div id="website-content" class="website-content">
+        <div style="padding: 100px 20px; text-align: center;">
+            <h1>Loader Test Page</h1>
+            <p>This page tests the loader functionality.</p>
+            <p>The loader should only show on the first visit to the home page (index.html).</p>
+            <p>Use the controls on the right to test different scenarios.</p>
+            <a href="index.html" style="color: var(--accent-primary);">Go to Home Page</a>
+        </div>
+    </div>
+
+    <script>
+        // Update test info
+        function updateTestInfo() {
+            document.getElementById('current-path').textContent = window.location.pathname;
+            document.getElementById('has-visited').textContent = localStorage.getItem('hasVisitedHome') || 'false';
+            document.getElementById('loader-visible').textContent = 
+                document.getElementById('loader').style.display === 'none' ? 'false' : 'true';
+        }
+        
+        function clearStorage() {
+            localStorage.clear();
+            console.log('All localStorage cleared');
+            updateTestInfo();
+        }
+        
+        // Update info every second
+        setInterval(updateTestInfo, 1000);
+        updateTestInfo();
+    </script>
+</body>
+</html> 

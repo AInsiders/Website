@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loader Debug Test</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+    }
+    
+    .debug-info {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 10000;
+      background: rgba(0,0,0,0.8);
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      max-width: 300px;
+    }
+    
+    .debug-info h3 {
+      margin-top: 0;
+      color: #00ff66;
+    }
+    
+    .debug-info p {
+      margin: 5px 0;
+    }
+    
+    .status {
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    
+    .status.success { background: #00aa00; }
+    .status.error { background: #aa0000; }
+    .status.warning { background: #aa6600; }
+  </style>
+  <link rel="stylesheet" href="brain-styles.css">
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r157/three.min.js"></script>
+  <script src="threejs-light-ball.js"></script>
+  <script src="shared-loader.js"></script>
+</head>
+<body class="home-page">
+  <div class="debug-info">
+    <h3>🔧 Loader Debug Info</h3>
+    <p><strong>Three.js:</strong> <span id="threejs-status" class="status">Checking...</span></p>
+    <p><strong>Text:</strong> <span id="text-status" class="status">Checking...</span></p>
+    <p><strong>Click:</strong> <span id="click-status" class="status">Waiting...</span></p>
+    <p><strong>Canvas:</strong> <span id="canvas-status" class="status">Checking...</span></p>
+    <p><strong>Loader:</strong> <span id="loader-status" class="status">Checking...</span></p>
+    <p><strong>Console:</strong> Check browser console for errors</p>
+  </div>
+
+  <!-- Loader -->
+  <div id="loader" class="loader">
+    <div class="loader-content">
+      <div class="typing-text" id="typing-text"></div>
+      <div class="pulsing-light" id="pulsing-light"></div>
+      <div class="click-hint">Click anywhere to continue</div>
+    </div>
+  </div>
+
+  <!-- Website Content -->
+  <div id="website-content" class="website-content">
+    <div style="padding: 100px; text-align: center;">
+      <h1>Home Page Content</h1>
+      <p>This content should appear smoothly as the loader fades away.</p>
+    </div>
+  </div>
+
+  <script>
+    // Debug monitoring
+    function updateStatus(elementId, status, message) {
+      const element = document.getElementById(elementId);
+      element.textContent = message;
+      element.className = `status ${status}`;
+    }
+    
+    // Check Three.js
+    setTimeout(() => {
+      if (window.THREE) {
+        updateStatus('threejs-status', 'success', 'Loaded');
+      } else {
+        updateStatus('threejs-status', 'error', 'Failed');
+      }
+    }, 1000);
+    
+    // Check text
+    setTimeout(() => {
+      const text = document.getElementById('typing-text');
+      if (text && text.textContent) {
+        updateStatus('text-status', 'success', 'Visible');
+      } else {
+        updateStatus('text-status', 'error', 'Missing');
+      }
+    }, 2000);
+    
+    // Check canvas
+    setTimeout(() => {
+      const canvas = document.querySelector('.threejs-canvas');
+      if (canvas) {
+        updateStatus('canvas-status', 'success', 'Found');
+      } else {
+        updateStatus('canvas-status', 'error', 'Missing');
+      }
+    }, 3000);
+    
+    // Check loader
+    setTimeout(() => {
+      const loader = document.getElementById('loader');
+      if (loader && loader.style.display !== 'none') {
+        updateStatus('loader-status', 'success', 'Visible');
+      } else {
+        updateStatus('loader-status', 'error', 'Hidden');
+      }
+    }, 1000);
+    
+    // Monitor clicks
+    document.addEventListener('click', () => {
+      updateStatus('click-status', 'success', 'Clicked!');
+    });
+    
+    // Override console for debugging
+    const originalLog = console.log;
+    const originalError = console.error;
+    
+    console.log = function(...args) {
+      originalLog.apply(console, args);
+      const debugInfo = document.querySelector('.debug-info');
+      if (debugInfo) {
+        const logDiv = document.createElement('div');
+        logDiv.style.fontSize = '12px';
+        logDiv.style.color = '#00ff66';
+        logDiv.textContent = args.join(' ');
+        debugInfo.appendChild(logDiv);
+        
+        // Keep only last 5 logs
+        const logs = debugInfo.querySelectorAll('div');
+        if (logs.length > 5) {
+          logs[0].remove();
+        }
+      }
+    };
+    
+    console.error = function(...args) {
+      originalError.apply(console, args);
+      const debugInfo = document.querySelector('.debug-info');
+      if (debugInfo) {
+        const logDiv = document.createElement('div');
+        logDiv.style.fontSize = '12px';
+        logDiv.style.color = '#ff4444';
+        logDiv.textContent = 'ERROR: ' + args.join(' ');
+        debugInfo.appendChild(logDiv);
+      }
+    };
+  </script>
+</body>
+</html> 

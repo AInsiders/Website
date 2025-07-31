@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .debug-info {
+            background: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        #news-container {
+            min-height: 200px;
+            border: 2px solid #666;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-article {
+            background: #444;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>News Debug Test</h1>
+    
+    <div class="debug-info">
+        <h3>Debug Information:</h3>
+        <div id="debug-output"></div>
+    </div>
+    
+    <div id="news-container">
+        <p>News container found. Waiting for JavaScript to load articles...</p>
+    </div>
+    
+    <script>
+        // Debug logging
+        function debugLog(message) {
+            console.log(message);
+            const debugOutput = document.getElementById('debug-output');
+            if (debugOutput) {
+                debugOutput.innerHTML += '<p>' + message + '</p>';
+            }
+        }
+        
+        debugLog('Page loaded, checking for news container...');
+        
+        const newsContainer = document.getElementById('news-container');
+        debugLog('News container found: ' + (newsContainer ? 'YES' : 'NO'));
+        
+        if (newsContainer) {
+            debugLog('News container content: ' + newsContainer.innerHTML);
+        }
+        
+        // Test if we can load the news script
+        debugLog('Attempting to load news script...');
+        
+        const script = document.createElement('script');
+        script.src = 'news-feeds-enhanced.js?v=1.9';
+        script.onload = function() {
+            debugLog('News script loaded successfully');
+            debugLog('EnhancedNewsFeedAggregator available: ' + (typeof EnhancedNewsFeedAggregator !== 'undefined'));
+            
+            if (typeof EnhancedNewsFeedAggregator !== 'undefined') {
+                try {
+                    debugLog('Creating news aggregator instance...');
+                    const aggregator = new EnhancedNewsFeedAggregator();
+                    debugLog('News aggregator created successfully');
+                } catch (error) {
+                    debugLog('Error creating news aggregator: ' + error.message);
+                }
+            }
+        };
+        script.onerror = function() {
+            debugLog('ERROR: Failed to load news script');
+        };
+        
+        document.head.appendChild(script);
+    </script>
+</body>
+</html> 

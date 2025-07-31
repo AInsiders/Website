@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Loader Test</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+    }
+    
+    .test-info {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      background: rgba(0,0,0,0.8);
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+    
+    .test-info h3 {
+      margin-top: 0;
+      color: #00ff66;
+    }
+    
+    .test-info p {
+      margin: 5px 0;
+    }
+    
+    .status {
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    
+    .status.success { background: #00aa00; }
+    .status.error { background: #aa0000; }
+    .status.warning { background: #aa6600; }
+  </style>
+  <link rel="stylesheet" href="brain-styles.css">
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r157/three.min.js"></script>
+  <script src="threejs-light-ball.js"></script>
+</head>
+<body class="home-page">
+  <div class="test-info">
+    <h3>🧪 Simple Test</h3>
+    <p><strong>Text:</strong> <span id="text-status" class="status">Checking...</span></p>
+    <p><strong>Light Ball:</strong> <span id="light-status" class="status">Checking...</span></p>
+    <p><strong>Clicks:</strong> <span id="click-count">0</span></p>
+    <p><strong>Console:</strong> Check browser console</p>
+  </div>
+
+  <!-- Loader -->
+  <div id="loader" class="loader">
+    <div class="loader-content">
+      <div class="typing-text" id="typing-text"></div>
+      <div class="pulsing-light" id="pulsing-light"></div>
+      <div class="click-hint">Click anywhere to continue</div>
+    </div>
+  </div>
+
+  <!-- Website Content -->
+  <div id="website-content" class="website-content">
+    <div style="padding: 100px; text-align: center;">
+      <h1>Home Page Content</h1>
+      <p>This content should appear smoothly as the loader fades away.</p>
+    </div>
+  </div>
+
+  <script>
+    // Simple test script
+    let clickCount = 0;
+    
+    function updateStatus(elementId, status, message) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.textContent = message;
+        element.className = `status ${status}`;
+      }
+    }
+    
+    // Initialize everything
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Simple test starting...');
+      
+      const loader = document.getElementById('loader');
+      const typingText = document.getElementById('typing-text');
+      const websiteContent = document.getElementById('website-content');
+      
+      // Set text immediately
+      if (typingText) {
+        typingText.textContent = "it all starts with a spark";
+        typingText.setAttribute('data-text', "it all starts with a spark");
+        updateStatus('text-status', 'success', 'Set');
+      } else {
+        updateStatus('text-status', 'error', 'Missing');
+      }
+      
+      // Initialize Three.js
+      if (window.initThreeJsLightBall) {
+        window.initThreeJsLightBall();
+        updateStatus('light-status', 'success', 'Initialized');
+      } else {
+        updateStatus('light-status', 'error', 'Failed');
+      }
+      
+      // Simple click handler
+      function handleClick() {
+        clickCount++;
+        document.getElementById('click-count').textContent = clickCount;
+        console.log('Click detected! Count:', clickCount);
+        
+        if (clickCount === 1) {
+          // First click - start explosion
+          if (window.startThreeJsExplosion) {
+            window.startThreeJsExplosion();
+          }
+          
+          // Add explosion effect to loader
+          loader.style.transform = 'scale(1.1)';
+          loader.style.filter = 'brightness(1.5)';
+          
+          // Start matrix reveal
+          setTimeout(() => {
+            loader.classList.add('reveal');
+            
+            // Show website content
+            setTimeout(() => {
+              if (websiteContent) {
+                websiteContent.classList.add('revealed');
+              }
+            }, 200);
+            
+            // Remove loader
+            setTimeout(() => {
+              loader.style.display = 'none';
+              loader.style.visibility = 'hidden';
+              loader.style.opacity = '0';
+              
+              if (window.cleanupThreeJs) {
+                window.cleanupThreeJs();
+              }
+            }, 1300);
+          }, 600);
+        }
+      }
+      
+      // Add click listeners
+      document.addEventListener('click', handleClick);
+      loader.addEventListener('click', handleClick);
+      
+      console.log('Simple test ready! Click anywhere to test.');
+    });
+  </script>
+</body>
+</html> 

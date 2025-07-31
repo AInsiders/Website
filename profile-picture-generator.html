@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blake Zimmerman - Profile Picture Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .profile-section {
+            margin: 30px 0;
+        }
+
+        .profile-picture {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid #667eea;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin: 20px auto;
+            display: block;
+        }
+
+        .profile-picture.small {
+            width: 100px;
+            height: 100px;
+            border-width: 3px;
+        }
+
+        .profile-picture.large {
+            width: 300px;
+            height: 300px;
+            border-width: 8px;
+        }
+
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            margin-top: 20px;
+        }
+
+        .size-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .size-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .size-btn.active {
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+        }
+
+        .canvas-container {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        canvas {
+            border-radius: 50%;
+            border: 5px solid #667eea;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+
+        .error {
+            color: #e74c3c;
+            background: #fdf2f2;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Blake Zimmerman</h1>
+        <h2>Profile Picture Generator</h2>
+        
+        <div class="profile-section">
+            <div id="loading" class="loading">Loading image...</div>
+            <div id="error" class="error" style="display: none;"></div>
+            
+            <div class="canvas-container">
+                <canvas id="profileCanvas" width="200" height="200"></canvas>
+            </div>
+            
+            <div class="size-buttons">
+                <button class="size-btn" onclick="setSize('small')">Small (100px)</button>
+                <button class="size-btn active" onclick="setSize('medium')">Medium (200px)</button>
+                <button class="size-btn" onclick="setSize('large')">Large (300px)</button>
+            </div>
+            
+            <div class="controls">
+                <button onclick="downloadProfilePicture()" class="download-btn">Download Profile Picture</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSize = 'medium';
+        let originalImage = null;
+
+        // Image path - adjust this to your actual image path
+        const imagePath = 'blake-zimmerman.jpg';
+
+        function setSize(size) {
+            currentSize = size;
+            const buttons = document.querySelectorAll('.size-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            let canvasSize;
+            switch(size) {
+                case 'small':
+                    canvasSize = 100;
+                    break;
+                case 'large':
+                    canvasSize = 300;
+                    break;
+                default:
+                    canvasSize = 200;
+            }
+            
+            const canvas = document.getElementById('profileCanvas');
+            canvas.width = canvasSize;
+            canvas.height = canvasSize;
+            
+            if (originalImage) {
+                drawProfilePicture();
+            }
+        }
+
+        function drawProfilePicture() {
+            const canvas = document.getElementById('profileCanvas');
+            const ctx = canvas.getContext('2d');
+            const size = canvas.width;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, size, size);
+            
+            // Create circular clipping path
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2, 0, 2 * Math.PI);
+            ctx.clip();
+            
+            // Calculate aspect ratio to maintain proportions
+            const imgAspect = originalImage.width / originalImage.height;
+            const canvasAspect = size / size;
+            
+            let drawWidth, drawHeight, offsetX, offsetY;
+            
+            if (imgAspect > canvasAspect) {
+                // Image is wider than canvas
+                drawHeight = size;
+                drawWidth = size * imgAspect;
+                offsetX = (size - drawWidth) / 2;
+                offsetY = 0;
+            } else {
+                // Image is taller than canvas
+                drawWidth = size;
+                drawHeight = size / imgAspect;
+                offsetX = 0;
+                offsetY = (size - drawHeight) / 2;
+            }
+            
+            // Draw the image
+            ctx.drawImage(originalImage, offsetX, offsetY, drawWidth, drawHeight);
+            ctx.restore();
+        }
+
+        function downloadProfilePicture() {
+            const canvas = document.getElementById('profileCanvas');
+            const link = document.createElement('a');
+            link.download = 'blake-zimmerman-profile-picture.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function loadImage() {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            img.onload = function() {
+                originalImage = img;
+                document.getElementById('loading').style.display = 'none';
+                drawProfilePicture();
+            };
+            
+            img.onerror = function() {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = 'Error loading image. Please check the file path: ' + imagePath;
+            };
+            
+            img.src = imagePath;
+        }
+
+        // Load image when page loads
+        window.onload = loadImage;
+    </script>
+</body>
+</html> 

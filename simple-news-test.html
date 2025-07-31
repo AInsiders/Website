@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple News Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        #news-container {
+            min-height: 200px;
+            border: 2px solid #666;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .debug-info {
+            background: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple News Test</h1>
+    
+    <div class="debug-info">
+        <h3>Debug Information:</h3>
+        <div id="debug-output"></div>
+    </div>
+    
+    <div id="news-container">
+        <p>News container found. Waiting for JavaScript to load articles...</p>
+    </div>
+    
+    <script>
+        // Debug logging
+        function debugLog(message) {
+            console.log(message);
+            const debugOutput = document.getElementById('debug-output');
+            if (debugOutput) {
+                debugOutput.innerHTML += '<p>' + message + '</p>';
+            }
+        }
+        
+        debugLog('Page loaded');
+        
+        // Test basic functionality
+        const newsContainer = document.getElementById('news-container');
+        debugLog('News container found: ' + (newsContainer ? 'YES' : 'NO'));
+        
+        if (newsContainer) {
+            debugLog('News container content: ' + newsContainer.innerHTML);
+        }
+        
+        // Test if we can create a simple article
+        setTimeout(() => {
+            debugLog('Adding test article...');
+            if (newsContainer) {
+                const testArticle = document.createElement('div');
+                testArticle.innerHTML = '<h3>Test Article</h3><p>This is a test article to see if the container works.</p>';
+                testArticle.style.background = '#444';
+                testArticle.style.padding = '15px';
+                testArticle.style.margin = '10px 0';
+                testArticle.style.borderRadius = '5px';
+                newsContainer.appendChild(testArticle);
+                debugLog('Test article added successfully');
+            }
+        }, 1000);
+        
+        // Test loading the news script
+        debugLog('Loading news script...');
+        const script = document.createElement('script');
+        script.src = 'news-feeds-enhanced.js?v=2.1';
+        script.onload = function() {
+            debugLog('News script loaded successfully');
+            debugLog('EnhancedNewsFeedAggregator available: ' + (typeof EnhancedNewsFeedAggregator !== 'undefined'));
+            
+            if (typeof EnhancedNewsFeedAggregator !== 'undefined') {
+                try {
+                    debugLog('Creating news aggregator instance...');
+                    const aggregator = new EnhancedNewsFeedAggregator();
+                    debugLog('News aggregator created successfully');
+                } catch (error) {
+                    debugLog('Error creating news aggregator: ' + error.message);
+                    debugLog('Error stack: ' + error.stack);
+                }
+            }
+        };
+        script.onerror = function() {
+            debugLog('ERROR: Failed to load news script');
+        };
+        
+        document.head.appendChild(script);
+    </script>
+</body>
+</html> 

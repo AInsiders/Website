@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #000;
+            color: #fff;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        .success { color: #00ff00; }
+        .error { color: #ff0000; }
+        .info { color: #ffff00; }
+    </style>
+</head>
+<body>
+    <h1>News Functionality Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>News Container</h2>
+        <div id="news-container">
+            <!-- News articles will be loaded here -->
+        </div>
+    </div>
+    
+    <script>
+        // Test script to verify news functionality
+        const testResults = document.getElementById('test-results');
+        
+        function logTest(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            testResults.appendChild(div);
+        }
+        
+        // Test 1: Check if news container exists
+        logTest('Test 1: Checking if news container exists...');
+        const newsContainer = document.getElementById('news-container');
+        if (newsContainer) {
+            logTest('✓ News container found', 'success');
+        } else {
+            logTest('✗ News container not found', 'error');
+        }
+        
+        // Test 2: Check if EnhancedNewsFeedAggregator class exists
+        logTest('Test 2: Checking if EnhancedNewsFeedAggregator class exists...');
+        if (typeof EnhancedNewsFeedAggregator !== 'undefined') {
+            logTest('✓ EnhancedNewsFeedAggregator class found', 'success');
+        } else {
+            logTest('✗ EnhancedNewsFeedAggregator class not found', 'error');
+        }
+        
+        // Test 3: Try to initialize the news aggregator
+        logTest('Test 3: Attempting to initialize news aggregator...');
+        try {
+            if (typeof EnhancedNewsFeedAggregator !== 'undefined') {
+                const aggregator = new EnhancedNewsFeedAggregator();
+                logTest('✓ News aggregator initialized successfully', 'success');
+            } else {
+                logTest('✗ Cannot initialize - class not found', 'error');
+            }
+        } catch (error) {
+            logTest(`✗ Error initializing news aggregator: ${error.message}`, 'error');
+        }
+    </script>
+    
+    <!-- Load the news script -->
+    <script src="news-feeds-enhanced.js?v=1.8"></script>
+</body>
+</html> 

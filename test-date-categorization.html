@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Date Categorization Test - A.Insiders</title>
+    <link rel="stylesheet" href="brain-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .test-section {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .test-title {
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+        
+        .test-results {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .date-filters {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+
+        .date-filter {
+            padding: 0.5rem 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            font-size: 0.875rem;
+        }
+
+        .date-filter:hover,
+        .date-filter.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .date-count-badge {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.75rem;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">Date Categorization Test</h1>
+        
+        <div class="test-section">
+            <h2>Date Filters</h2>
+            <div class="date-filters">
+                <button class="date-filter active" data-date-filter="all">All Time</button>
+                <button class="date-filter" data-date-filter="today">Today <span class="date-count-badge" id="today-count">0</span></button>
+                <button class="date-filter" data-date-filter="yesterday">Yesterday <span class="date-count-badge" id="yesterday-count">0</span></button>
+                <button class="date-filter" data-date-filter="this-week">This Week <span class="date-count-badge" id="this-week-count">0</span></button>
+                <button class="date-filter" data-date-filter="this-month">This Month <span class="date-count-badge" id="this-month-count">0</span></button>
+                <button class="date-filter" data-date-filter="last-week">Last Week <span class="date-count-badge" id="last-week-count">0</span></button>
+                <button class="date-filter" data-date-filter="last-month">Last Month <span class="date-count-badge" id="last-month-count">0</span></button>
+            </div>
+            
+            <div class="test-results">
+                <h3>Current Filter: <span id="current-filter">All Time</span></h3>
+                <p>Filtered Articles: <span id="filtered-count">0</span></p>
+                <p>Total Articles: <span id="total-count">0</span></p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Date Statistics</h2>
+            <div class="test-results" id="date-stats">
+                <p>Loading statistics...</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Sample Articles by Date</h2>
+            <div id="sample-articles">
+                <p>Loading sample articles...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test data with various dates
+        const testArticles = [
+            {
+                title: "Today's AI Breakthrough",
+                pubDate: new Date().toISOString(),
+                category: "AI"
+            },
+            {
+                title: "Yesterday's Security Update",
+                pubDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+                category: "Cybersecurity"
+            },
+            {
+                title: "This Week's Tech News",
+                pubDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+                category: "Tech Reviews"
+            },
+            {
+                title: "Last Week's Innovation",
+                pubDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+                category: "NEW TECH"
+            },
+            {
+                title: "This Month's Discovery",
+                pubDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+                category: "Bioengineering"
+            },
+            {
+                title: "Last Month's Research",
+                pubDate: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
+                category: "AI"
+            }
+        ];
+
+        class DateCategorizationTest {
+            constructor() {
+                this.articles = testArticles;
+                this.currentDateFilter = 'all';
+                this.setupEventListeners();
+                this.updateDisplay();
+            }
+
+            setupEventListeners() {
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('date-filter')) {
+                        this.currentDateFilter = e.target.dataset.dateFilter;
+                        this.updateDisplay();
+                        this.updateActiveFilter();
+                    }
+                });
+            }
+
+            updateActiveFilter() {
+                document.querySelectorAll('.date-filter').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                const activeBtn = document.querySelector(`[data-date-filter="${this.currentDateFilter}"]`);
+                if (activeBtn) {
+                    activeBtn.classList.add('active');
+                }
+            }
+
+            matchesDateFilter(pubDate) {
+                if (this.currentDateFilter === 'all') return true;
+                
+                const articleDate = new Date(pubDate);
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                switch (this.currentDateFilter) {
+                    case 'today':
+                        const articleDay = new Date(articleDate.getFullYear(), articleDate.getMonth(), articleDate.getDate());
+                        return articleDay.getTime() === today.getTime();
+                    case 'yesterday':
+                        const yesterday = new Date(today);
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        const articleYesterday = new Date(articleDate.getFullYear(), articleDate.getMonth(), articleDate.getDate());
+                        return articleYesterday.getTime() === yesterday.getTime();
+                    case 'this-week':
+                        const weekStart = new Date(today);
+                        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                        return articleDate >= weekStart;
+                    case 'this-month':
+                        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                        return articleDate >= monthStart;
+                    case 'last-week':
+                        const lastWeekStart = new Date(today);
+                        lastWeekStart.setDate(lastWeekStart.getDate() - lastWeekStart.getDay() - 7);
+                        const lastWeekEnd = new Date(today);
+                        lastWeekEnd.setDate(lastWeekEnd.getDate() - lastWeekEnd.getDay());
+                        return articleDate >= lastWeekStart && articleDate < lastWeekEnd;
+                    case 'last-month':
+                        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1);
+                        return articleDate >= lastMonthStart && articleDate < lastMonthEnd;
+                    default:
+                        return true;
+                }
+            }
+
+            getDateStatistics() {
+                const stats = {
+                    total: this.articles.length,
+                    today: 0,
+                    yesterday: 0,
+                    thisWeek: 0,
+                    thisMonth: 0,
+                    lastWeek: 0,
+                    lastMonth: 0
+                };
+
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                this.articles.forEach(article => {
+                    const articleDate = new Date(article.pubDate);
+                    const articleDay = new Date(articleDate.getFullYear(), articleDate.getMonth(), articleDate.getDate());
+                    
+                    // Today
+                    if (articleDay.getTime() === today.getTime()) {
+                        stats.today++;
+                    }
+                    
+                    // Yesterday
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    if (articleDay.getTime() === yesterday.getTime()) {
+                        stats.yesterday++;
+                    }
+                    
+                    // This week
+                    const weekStart = new Date(today);
+                    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                    if (articleDate >= weekStart) {
+                        stats.thisWeek++;
+                    }
+                    
+                    // This month
+                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                    if (articleDate >= monthStart) {
+                        stats.thisMonth++;
+                    }
+                    
+                    // Last week
+                    const lastWeekStart = new Date(today);
+                    lastWeekStart.setDate(lastWeekStart.getDate() - lastWeekStart.getDay() - 7);
+                    const lastWeekEnd = new Date(today);
+                    lastWeekEnd.setDate(lastWeekEnd.getDate() - lastWeekEnd.getDay());
+                    if (articleDate >= lastWeekStart && articleDate < lastWeekEnd) {
+                        stats.lastWeek++;
+                    }
+                    
+                    // Last month
+                    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1);
+                    if (articleDate >= lastMonthStart && articleDate < lastMonthEnd) {
+                        stats.lastMonth++;
+                    }
+                });
+
+                return stats;
+            }
+
+            updateDisplay() {
+                // Update filtered articles
+                const filteredArticles = this.articles.filter(article => this.matchesDateFilter(article.pubDate));
+                
+                // Update counts
+                document.getElementById('current-filter').textContent = this.currentDateFilter === 'all' ? 'All Time' : this.currentDateFilter;
+                document.getElementById('filtered-count').textContent = filteredArticles.length;
+                document.getElementById('total-count').textContent = this.articles.length;
+                
+                // Update date filter counts
+                const stats = this.getDateStatistics();
+                const countElements = {
+                    'today-count': stats.today,
+                    'yesterday-count': stats.yesterday,
+                    'this-week-count': stats.thisWeek,
+                    'this-month-count': stats.thisMonth,
+                    'last-week-count': stats.lastWeek,
+                    'last-month-count': stats.lastMonth
+                };
+
+                Object.entries(countElements).forEach(([id, count]) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = count;
+                    }
+                });
+                
+                // Update date statistics display
+                document.getElementById('date-stats').innerHTML = `
+                    <p><strong>Total Articles:</strong> ${stats.total}</p>
+                    <p><strong>Today:</strong> ${stats.today}</p>
+                    <p><strong>Yesterday:</strong> ${stats.yesterday}</p>
+                    <p><strong>This Week:</strong> ${stats.thisWeek}</p>
+                    <p><strong>This Month:</strong> ${stats.thisMonth}</p>
+                    <p><strong>Last Week:</strong> ${stats.lastWeek}</p>
+                    <p><strong>Last Month:</strong> ${stats.lastMonth}</p>
+                `;
+                
+                // Update sample articles display
+                document.getElementById('sample-articles').innerHTML = filteredArticles.map(article => `
+                    <div style="border: 1px solid var(--border-color); padding: 1rem; margin: 0.5rem 0; border-radius: var(--border-radius-sm);">
+                        <h4>${article.title}</h4>
+                        <p><strong>Category:</strong> ${article.category}</p>
+                        <p><strong>Date:</strong> ${new Date(article.pubDate).toLocaleDateString()}</p>
+                    </div>
+                `).join('') || '<p>No articles match the current filter.</p>';
+            }
+        }
+
+        // Initialize the test when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new DateCategorizationTest();
+        });
+    </script>
+</body>
+</html> 

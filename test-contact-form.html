@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Form Test - A.Insiders</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #000000;
+      color: #ffffff;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    .test-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #111111;
+      padding: 2rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(0, 102, 255, 0.2);
+    }
+    .test-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .test-form input,
+    .test-form textarea {
+      padding: 0.75rem;
+      background: #000000;
+      border: 1px solid rgba(0, 102, 255, 0.2);
+      border-radius: 0.5rem;
+      color: #ffffff;
+      font-family: inherit;
+    }
+    .test-form input:focus,
+    .test-form textarea:focus {
+      outline: none;
+      border-color: #0066ff;
+      box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+    }
+    .test-form button {
+      padding: 1rem;
+      background: #0066ff;
+      color: #000000;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .test-form button:hover {
+      background: #0052cc;
+      transform: translateY(-2px);
+    }
+    .test-info {
+      background: rgba(0, 102, 255, 0.1);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 2rem;
+      border-left: 4px solid #0066ff;
+    }
+    .test-info h3 {
+      margin-top: 0;
+      color: #0066ff;
+    }
+    .test-info ul {
+      margin: 0.5rem 0;
+      padding-left: 1.5rem;
+    }
+    .test-info li {
+      margin-bottom: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>Contact Form Test</h1>
+    
+    <div class="test-info">
+      <h3>FormSubmit Integration Test</h3>
+      <p>This is a simplified test version of the contact form to verify FormSubmit integration.</p>
+      <ul>
+        <li><strong>Action URL:</strong> https://formsubmit.co/aiinsidersnetwork@gmail.com</li>
+        <li><strong>Method:</strong> POST</li>
+        <li><strong>Redirect:</strong> thank-you.html</li>
+        <li><strong>Reply-to:</strong> Uses the email field value</li>
+        <li><strong>Subject:</strong> "New Contact Form Submission - A.Insiders"</li>
+      </ul>
+      <p><strong>Note:</strong> On first submission, FormSubmit will send a confirmation email to aiinsidersnetwork@gmail.com. You must click the confirmation link to activate the form.</p>
+    </div>
+    
+    <form class="test-form" action="https://formsubmit.co/aiinsidersnetwork@gmail.com" method="POST">
+      <input type="text" name="full_name" placeholder="Full Name" required>
+      <input type="email" name="email" placeholder="Email Address" required>
+      <input type="text" name="subject" placeholder="Subject" required>
+      <textarea name="message" placeholder="Your message..." rows="4" required></textarea>
+      
+      <!-- FormSubmit hidden fields -->
+      <input type="hidden" name="_replyto" value="email">
+      <input type="hidden" name="_subject" value="Test Contact Form Submission - A.Insiders">
+      <input type="hidden" name="_next" value="thank-you.html">
+      <input type="hidden" name="_captcha" value="false">
+      
+      <button type="submit">Send Test Message</button>
+    </form>
+    
+    <div style="margin-top: 2rem; text-align: center;">
+      <a href="contact.html" style="color: #0066ff; text-decoration: none;">← Back to Full Contact Page</a>
+    </div>
+  </div>
+</body>
+</html> 

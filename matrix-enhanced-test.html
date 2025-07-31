@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Matrix Test</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+    }
+    
+    .test-controls {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      background: rgba(0,0,0,0.9);
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      border: 1px solid #00ff00;
+      max-width: 300px;
+    }
+    
+    .test-controls h3 {
+      margin-top: 0;
+      color: #00ff00;
+      text-align: center;
+    }
+    
+    .test-controls p {
+      margin: 5px 0;
+    }
+    
+    .status {
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-weight: bold;
+      font-size: 12px;
+    }
+    
+    .status.success { background: #00aa00; color: #fff; }
+    .status.error { background: #aa0000; color: #fff; }
+    .status.warning { background: #aa6600; color: #fff; }
+    
+    .control-button {
+      background: #003300;
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      padding: 8px 16px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .control-button:hover {
+      background: #004400;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      background: #003300;
+      border-radius: 5px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00ff00, #00aa00);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+  </style>
+  <link rel="stylesheet" href="brain-styles.css">
+  <script src="matrix-loader.js"></script>
+</head>
+<body class="home-page">
+  <div class="test-controls">
+    <h3>🎭 MATRIX PROTOCOL</h3>
+    <p><strong>Sequence:</strong> <span id="sequence-status" class="status">Initializing...</span></p>
+    <p><strong>Typing:</strong> <span id="typing-status" class="status">Waiting...</span></p>
+    <p><strong>Symbols:</strong> <span id="symbols-status" class="status">Waiting...</span></p>
+    <p><strong>Color Phase:</strong> <span id="color-status" class="status">Green</span></p>
+    <p><strong>Reveal:</strong> <span id="reveal-status" class="status">Waiting...</span></p>
+    
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <p style="text-align: center; margin: 5px 0; font-size: 12px;">
+      <span id="progress-text">0%</span> Complete
+    </p>
+    
+    <button class="control-button" onclick="restartMatrix()">RESTART MATRIX</button>
+    <button class="control-button" onclick="skipToReveal()">SKIP TO REVEAL</button>
+    
+    <p style="font-size: 11px; color: #00aa00; margin-top: 15px;">
+      The Matrix has you... Watch as symbols reveal the real world beneath.
+    </p>
+  </div>
+
+  <!-- Loader -->
+  <div id="loader" class="loader">
+    <div class="loader-content">
+      <div class="typing-text" id="typing-text"></div>
+      <div class="pulsing-light" id="pulsing-light"></div>
+      <div class="click-hint">Click anywhere to wake up</div>
+    </div>
+  </div>
+
+  <!-- Website Content (The Real World) -->
+  <div id="website-content" class="website-content">
+    <div style="padding: 100px; text-align: center; background: linear-gradient(135deg, #1e3c72, #2a5298); min-height: 100vh;">
+      <h1 style="font-size: 4rem; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.5); margin-bottom: 30px;">
+        THE REAL WORLD
+      </h1>
+      <p style="font-size: 1.5rem; color: #ccc; margin: 20px 0;">
+        Welcome to reality, Neo.
+      </p>
+      <p style="font-size: 1.2rem; color: #aaa;">
+        The Matrix was a computer simulation. This is what exists beyond the code.
+      </p>
+      <div style="margin-top: 50px;">
+        <div style="display: inline-block; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px; margin: 10px;">
+          <h3 style="color: #00ff00;">Matrix Code</h3>
+          <p>Symbols falling like rain</p>
+        </div>
+        <div style="display: inline-block; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px; margin: 10px;">
+          <h3 style="color: #ff6600;">Reality</h3>
+          <p>What lies beneath</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Enhanced Matrix test script
+    let currentProgress = 0;
+    let progressInterval;
+    
+    function updateStatus(elementId, status, message) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.textContent = message;
+        element.className = `status ${status}`;
+      }
+    }
+    
+    function updateProgress(progress) {
+      currentProgress = Math.min(progress * 100, 100);
+      const progressFill = document.getElementById('progress-fill');
+      const progressText = document.getElementById('progress-text');
+      
+      if (progressFill) progressFill.style.width = currentProgress + '%';
+      if (progressText) progressText.textContent = Math.round(currentProgress) + '%';
+    }
+    
+    function restartMatrix() {
+      // Reset everything
+      currentProgress = 0;
+      updateProgress(0);
+      
+      // Reset all statuses
+      updateStatus('sequence-status', 'warning', 'Restarting...');
+      updateStatus('typing-status', 'warning', 'Resetting...');
+      updateStatus('symbols-status', 'warning', 'Clearing...');
+      updateStatus('reveal-status', 'warning', 'Hiding...');
+      
+      // Cleanup old matrix
+      if (window.cleanupMatrix) {
+        window.cleanupMatrix();
+      }
+      
+      // Reset elements
+      const loader = document.getElementById('loader');
+      const websiteContent = document.getElementById('website-content');
+      const typingText = document.getElementById('typing-text');
+      
+      if (loader) {
+        loader.style.display = 'flex';
+        loader.style.opacity = '1';
+      }
+      
+      if (websiteContent) {
+        websiteContent.style.display = 'none';
+        websiteContent.style.opacity = '0';
+      }
+      
+      if (typingText) {
+        typingText.innerHTML = '';
+      }
+      
+      // Restart after a short delay
+      setTimeout(() => {
+        if (window.initMatrixLoader) {
+          window.initMatrixLoader();
+          updateStatus('sequence-status', 'success', 'Active');
+        }
+      }, 500);
+    }
+    
+    function skipToReveal() {
+      updateStatus('sequence-status', 'success', 'Skipping...');
+      updateStatus('typing-status', 'success', 'Complete');
+      updateStatus('symbols-status', 'success', 'Active');
+      updateStatus('reveal-status', 'warning', 'Starting...');
+      
+      if (window.startMatrixReveal) {
+        window.startMatrixReveal();
+      }
+    }
+    
+    // Initialize everything
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Enhanced Matrix test starting...');
+      
+      // Check elements
+      const loader = document.getElementById('loader');
+      const typingText = document.getElementById('typing-text');
+      const websiteContent = document.getElementById('website-content');
+      
+      if (typingText) {
+        updateStatus('typing-status', 'success', 'Ready');
+      } else {
+        updateStatus('typing-status', 'error', 'Missing');
+      }
+      
+      // Initialize Matrix loader
+      if (window.initMatrixLoader) {
+        window.initMatrixLoader();
+        updateStatus('sequence-status', 'success', 'Active');
+      } else {
+        updateStatus('sequence-status', 'error', 'Failed');
+      }
+      
+      // Monitor progress
+      progressInterval = setInterval(() => {
+        if (window.matrixRevealProgress !== undefined) {
+          updateProgress(window.matrixRevealProgress);
+          
+          // Update color phase status
+          if (window.colorPhase) {
+            let colorStatus = 'success';
+            let colorText = window.colorPhase;
+            
+            if (window.colorPhase === 'green') {
+              colorText = 'Green';
+              colorStatus = 'success';
+            } else if (window.colorPhase === 'brightening') {
+              colorText = 'Brightening';
+              colorStatus = 'warning';
+            } else if (window.colorPhase === 'blue') {
+              colorText = 'Blue Hue';
+              colorStatus = 'warning';
+            } else if (window.colorPhase === 'fade') {
+              colorText = 'Fading';
+              colorStatus = 'error';
+            }
+            
+            updateStatus('color-status', colorStatus, colorText);
+          }
+          
+          // Update status based on progress
+          if (window.matrixRevealProgress > 0) {
+            updateStatus('symbols-status', 'success', 'Falling');
+            updateStatus('reveal-status', 'warning', 'Revealing...');
+          }
+          
+          if (window.matrixRevealProgress >= 1) {
+            clearInterval(progressInterval);
+            updateStatus('reveal-status', 'success', 'Complete');
+            updateStatus('sequence-status', 'success', 'Awakened');
+          }
+        }
+        
+        // Check if typing is happening
+        const typingText = document.getElementById('typing-text');
+        if (typingText && typingText.textContent.length > 0) {
+          updateStatus('typing-status', 'success', 'Active');
+        }
+      }, 100);
+      
+      console.log('Enhanced Matrix test ready! The sequence will begin automatically...');
+    });
+  </script>
+</body>
+</html>
