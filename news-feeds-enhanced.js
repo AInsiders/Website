@@ -24,6 +24,10 @@ class EnhancedNewsFeedAggregator {
             this.isInitialLoad = true; // Track if this is the first load
             this.staticArticles = []; // Articles that should remain static in UI
             
+            // Server-side cache system for instant loading
+            this.serverCacheUrl = 'http://localhost:3001/api/cache';
+            this.backgroundRefreshInterval = null;
+            
             console.log('Constructor properties initialized, calling init()...');
             this.init();
         } catch (error) {
@@ -218,27 +222,57 @@ class EnhancedNewsFeedAggregator {
         console.log('EnhancedNewsFeedAggregator initializing...');
         console.log('Total feeds to load:', Object.keys(this.feeds).reduce((total, category) => total + this.feeds[category].length, 0));
         
-        // Show loading banner immediately when page loads
-        this.showLoadingBanner();
-        
         try {
             this.setupEventListeners();
             console.log('Event listeners setup complete');
             
-            await this.loadAllFeeds(); // Loads from this.feeds (hardcoded)
-            console.log('All feeds loaded, total articles:', this.allArticles.length);
+            // Try to load from server cache first for instant display
+            const cachedNews = await this.loadFromServerCache();
+            if (cachedNews && cachedNews.length > 0) {
+                this.allArticles = cachedNews;
+                this.staticArticles = [...cachedNews];
+                this.filteredArticles = [...this.allArticles];
+                this.isInitialLoad = false;
+                this.filterArticles();
+                this.renderNews();
+                this.updateActiveFilter();
+                this.updateActiveDateFilter();
+                this.handleURLParameters();
+                this.updateCategoryButtonColors();
+                console.log(`Loaded ${cachedNews.length} articles from server cache for instant display`);
+                
+                // Set up periodic refresh for background updates
+                this.setupPeriodicRefresh();
+            } else {
+                // No cache available, show loading and load normally
+                console.log('No server cache found, loading feeds normally...');
+                this.showLoadingBanner();
+                await this.loadAllFeeds();
+                this.renderNews();
+                this.updateActiveFilter();
+                this.updateActiveDateFilter();
+                this.handleURLParameters();
+                this.updateCategoryButtonColors();
+            }
             
-            this.renderNews();
-            console.log('News rendered');
-            
-            this.updateActiveFilter();
-            this.updateActiveDateFilter();
-            this.handleURLParameters();
-            this.updateCategoryButtonColors(); // New method for color coding
             console.log('EnhancedNewsFeedAggregator initialization complete');
         } catch (error) {
             console.error('Error during news aggregator initialization:', error);
             this.handleInitializationError(error);
+        }
+        
+        // Set up cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            this.cleanup();
+        });
+    }
+    
+    cleanup() {
+        // Clear background refresh interval
+        if (this.backgroundRefreshInterval) {
+            clearInterval(this.backgroundRefreshInterval);
+            this.backgroundRefreshInterval = null;
+            console.log('Cleaned up background refresh interval');
         }
     }
 
@@ -274,16 +308,7 @@ class EnhancedNewsFeedAggregator {
             if (e.target.classList.contains('category-filter')) {
                 const selectedCategory = e.target.dataset.category;
                 
-                // Don't show loading for "all" category since it's just filtering
-                if (selectedCategory !== 'all') {
-                    this.updateCategoryLoadingState(selectedCategory, true);
-                    
-                    // Simulate loading time for better UX (remove this in production)
-                    setTimeout(() => {
-                        this.updateCategoryLoadingState(selectedCategory, false);
-                    }, 500);
-                }
-                
+                // Always allow category switching, regardless of loading state
                 this.currentCategory = selectedCategory;
                 this.currentPage = 1;
                 this.filterArticles();
@@ -291,6 +316,32 @@ class EnhancedNewsFeedAggregator {
                 this.updateActiveFilter();
                 this.updateDateFilterCounts(); // Update date filter counts for new category
                 this.resetLoadMoreButton(); // Reset load more button state
+                
+                // Only show loading indicator for categories without content
+                if (selectedCategory !== 'all' && this.isLoading && !this.hasContentInCategory(selectedCategory)) {
+                    this.updateCategoryLoadingState(selectedCategory, true);
+                    
+                    // Remove loading indicator after a short delay
+                    setTimeout(() => {
+                        this.updateCategoryLoadingState(selectedCategory, false);
+                    }, 1500);
+                }
+                
+                // Show appropriate notification based on category state
+                if (selectedCategory !== 'all') {
+                    const articleCount = this.getCategoryArticleCount(selectedCategory);
+                    const isCurrentlyLoading = this.isCategoryLoading(selectedCategory);
+                    
+                    if (isCurrentlyLoading) {
+                        showNotification(`${selectedCategory} feeds are currently loading...`, 'info');
+                    } else if (articleCount > 0) {
+                        showNotification(`Showing ${articleCount} ${selectedCategory} articles`, 'success');
+                    } else if (this.isLoading) {
+                        showNotification(`Switched to ${selectedCategory} - feeds are still loading in background`, 'info');
+                    } else {
+                        showNotification(`No ${selectedCategory} articles available yet`, 'warning');
+                    }
+                }
             }
         });
 
@@ -368,6 +419,15 @@ class EnhancedNewsFeedAggregator {
         const categoryArticles = this.allArticles.filter(article => article.category === category);
         return categoryArticles.length > 0;
     }
+    
+    getCategoryArticleCount(category) {
+        const categoryArticles = this.allArticles.filter(article => article.category === category);
+        return categoryArticles.length;
+    }
+    
+    isCategoryLoading(category) {
+        return this.loadingCategories.has(category);
+    }
 
 
 
@@ -381,29 +441,30 @@ class EnhancedNewsFeedAggregator {
                 // Debug logging
                 console.log(`Category ${category}: hasContent = ${hasContent}, total articles = ${this.allArticles.filter(a => a.category === category).length}`);
                 
-                // Remove existing color classes
+                // Remove existing color classes and loading state
                 button.style.removeProperty('background-color');
                 button.style.removeProperty('border-color');
                 button.style.removeProperty('color');
                 button.style.removeProperty('box-shadow');
-                button.classList.remove('pulse-green', 'pulse-red');
+                button.classList.remove('pulse-green', 'pulse-red', 'loading');
+                button.style.opacity = '1';
                 
                 if (hasContent) {
-                    // GREEN for categories with any content present
+                    // GREEN for categories with any content present - NO LOADING INDICATOR
                     button.style.backgroundColor = '#00aa00';
                     button.style.borderColor = '#00aa00';
                     button.style.color = 'white';
                     button.style.boxShadow = '0 0 15px rgba(0, 170, 0, 0.4)';
                     button.classList.add('pulse-green');
-                    console.log(`Setting ${category} button to GREEN (has content)`);
+                    console.log(`Setting ${category} button to GREEN (has content) - no loading indicator`);
                 } else {
-                    // RED for categories with no content
+                    // RED for categories with no content - SHOW LOADING INDICATOR
                     button.style.backgroundColor = '#ff4444';
                     button.style.borderColor = '#ff4444';
                     button.style.color = 'white';
                     button.style.boxShadow = '0 0 15px rgba(255, 68, 68, 0.4)';
-                    button.classList.add('pulse-red');
-                    console.log(`Setting ${category} button to RED (no content)`);
+                    button.classList.add('pulse-red', 'loading');
+                    console.log(`Setting ${category} button to RED (no content) - showing loading indicator`);
                 }
             }
         });
@@ -444,10 +505,17 @@ class EnhancedNewsFeedAggregator {
             const totalCategoriesToRetry = new Set([...emptyCategories, ...Array.from(this.failedFeeds).map(feedKey => feedKey.split(':')[0])]).size;
             retryBtn.innerHTML = '<i class="fas fa-redo-alt"></i> Retry Failed Categories';
             retryBtn.title = `Retry ${totalCategoriesToRetry} categories with failed feeds or no content`;
+            
+            // Auto-retry after 1 second if there are failed categories
+            setTimeout(() => {
+                if (this.failedFeeds.size > 0 || emptyCategories.length > 0) {
+                    console.log(`Auto-retrying ${totalCategoriesToRetry} failed categories after 1 second...`);
+                    this.retryFailedFeeds();
+                }
+            }, 1000);
         } else if (allCategoriesHaveContent) {
-            // If no failed feeds and all categories have content, show "Reload All Articles"
-            retryBtn.innerHTML = '<i class="fas fa-redo-alt"></i> Reload All Articles';
-            retryBtn.title = 'Reload all articles from all sources';
+            // If no failed feeds and all categories have content, hide the button
+            retryBtn.style.display = 'none';
         } else {
             // Fallback case
             retryBtn.innerHTML = '<i class="fas fa-redo-alt"></i> Retry Failed Categories';
@@ -457,44 +525,7 @@ class EnhancedNewsFeedAggregator {
 
 
 
-    async reloadAllArticles() {
-        const retryBtn = document.getElementById('retry-failed-btn');
-        if (!retryBtn) return;
 
-        // Show loading state
-        retryBtn.classList.add('loading');
-        retryBtn.innerHTML = '<i class="fas fa-spinner"></i> Reloading...';
-        this.showLoadingBanner(); // Show loading banner during reload
-
-        try {
-            console.log('Reloading all articles from all sources...');
-            
-            // Show loading state for all categories
-            this.updateAllCategoryLoadingStates(true);
-            
-            // Clear all articles and reload
-            this.allArticles = [];
-            this.failedFeeds.clear();
-            
-            // Reload all feeds
-            await this.loadAllFeeds();
-            
-            showNotification('All articles reloaded successfully!', 'success');
-            console.log('Reload completed successfully');
-            
-        } catch (error) {
-            console.error('Error during reload:', error);
-            showNotification('Error occurred while reloading articles. Please try again.', 'error');
-        } finally {
-            // Remove loading state from all categories
-            this.updateAllCategoryLoadingStates(false);
-            
-            // Remove loading state from retry button
-            retryBtn.classList.remove('loading');
-            this.updateRetryButtonText(); // Update button text based on current state
-            this.hideLoadingBanner(); // Hide loading banner after reload
-        }
-    }
 
     async refreshNewContent() {
         console.log('Refreshing new content only...');
@@ -620,12 +651,18 @@ class EnhancedNewsFeedAggregator {
             // Sort articles by date
             this.allArticles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
             
+            // Save to server cache for future loads
+            await this.saveToServerCache(this.allArticles);
+            
             // On initial load, set static articles
             if (this.isInitialLoad) {
                 this.staticArticles = [...this.allArticles];
                 this.isInitialLoad = false;
                 console.log(`Initial load complete. ${this.staticArticles.length} articles set as static.`);
             }
+            
+            // Set up aggressive periodic refresh (every minute) for future updates
+            this.setupAggressivePeriodicRefresh();
             
             // Apply current filters
             this.filterArticles();
@@ -899,6 +936,273 @@ class EnhancedNewsFeedAggregator {
                 fromCache: false
             };
         }
+    }
+
+    // Server-side cache management methods
+    async loadFromServerCache() {
+        try {
+            const response = await fetch(this.serverCacheUrl);
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data) {
+                    // Combine all cached categories
+                    const allArticles = [];
+                    for (const [category, cacheData] of Object.entries(result.data)) {
+                        if (cacheData.articles && Array.isArray(cacheData.articles)) {
+                            allArticles.push(...cacheData.articles);
+                        }
+                    }
+                    
+                    if (allArticles.length > 0) {
+                        console.log(`Loaded ${allArticles.length} articles from server cache`);
+                        return allArticles;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error loading from server cache:', error);
+        }
+        return null;
+    }
+
+    async saveToServerCache(articles) {
+        try {
+            if (articles && articles.length > 0) {
+                // Group articles by category
+                const articlesByCategory = {};
+                articles.forEach(article => {
+                    if (!articlesByCategory[article.category]) {
+                        articlesByCategory[article.category] = [];
+                    }
+                    articlesByCategory[article.category].push(article);
+                });
+                
+                // Save each category to server cache
+                for (const [category, categoryArticles] of Object.entries(articlesByCategory)) {
+                    const response = await fetch(`${this.serverCacheUrl}/${category}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ articles: categoryArticles })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log(`Saved ${categoryArticles.length} articles to server cache for ${category}`);
+                    } else {
+                        console.warn(`Failed to save ${category} articles to server cache`);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error saving to server cache:', error);
+        }
+    }
+
+    setupAggressivePeriodicRefresh() {
+        // Clear any existing interval
+        if (this.backgroundRefreshInterval) {
+            clearInterval(this.backgroundRefreshInterval);
+        }
+
+        // Set up aggressive refresh every 1 minute
+        this.backgroundRefreshInterval = setInterval(() => {
+            console.log('Performing aggressive background refresh (every minute)...');
+            this.performAggressiveBackgroundRefresh();
+        }, 60 * 1000); // 1 minute
+
+        console.log('Set up aggressive periodic refresh every 1 minute');
+    }
+
+    startBackgroundRefresh() {
+        console.log('Starting immediate background refresh...');
+        this.performBackgroundRefresh();
+    }
+
+    async performAggressiveBackgroundRefresh() {
+        try {
+            console.log('Performing aggressive background refresh to check for new articles...');
+            
+            const currentArticleCount = this.allArticles.length;
+            const currentArticlesByCategory = {};
+            
+            // Group current articles by category for better duplicate detection
+            this.allArticles.forEach(article => {
+                if (!currentArticlesByCategory[article.category]) {
+                    currentArticlesByCategory[article.category] = new Set();
+                }
+                const articleKey = this.generateArticleKey(article);
+                currentArticlesByCategory[article.category].add(articleKey);
+            });
+            
+            // Load feeds in the background without showing loading indicators
+            const feedPromises = [];
+            const feedInfo = [];
+            
+            for (const [category, feeds] of Object.entries(this.feeds)) {
+                for (const feed of feeds) {
+                    const promise = this.fetchFeed(feed, category);
+                    feedPromises.push(promise);
+                    feedInfo.push({ feed, category, name: feed.name });
+                }
+            }
+            
+            const results = await Promise.allSettled(feedPromises);
+            const newArticles = [];
+            const categoryUpdates = {};
+            
+            results.forEach((result, index) => {
+                const { category, name } = feedInfo[index];
+                if (result.status === 'fulfilled' && result.value && result.value.length > 0) {
+                    // Check for duplicates within this category
+                    const categoryExistingKeys = currentArticlesByCategory[category] || new Set();
+                    const categoryNewArticles = [];
+                    
+                    result.value.forEach(article => {
+                        const articleKey = this.generateArticleKey(article);
+                        if (!categoryExistingKeys.has(articleKey)) {
+                            categoryNewArticles.push(article);
+                            categoryExistingKeys.add(articleKey);
+                        }
+                    });
+                    
+                    if (categoryNewArticles.length > 0) {
+                        newArticles.push(...categoryNewArticles);
+                        categoryUpdates[category] = categoryNewArticles.length;
+                        console.log(`Found ${categoryNewArticles.length} new articles in ${category}`);
+                    }
+                }
+            });
+            
+            if (newArticles.length > 0) {
+                // Add new articles to existing collection
+                this.allArticles.push(...newArticles);
+                
+                // Sort by date
+                this.allArticles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+                
+                // Save to server cache
+                await this.saveToServerCache(this.allArticles);
+                
+                // Update the UI if user is still on the page
+                this.filterArticles();
+                this.updateCategoryButtonColors();
+                this.updateDateFilterCounts();
+                
+                console.log(`Aggressive background refresh found ${newArticles.length} total new articles`);
+                console.log('Category updates:', categoryUpdates);
+                
+                // Show detailed notification about new content
+                this.showDetailedNewContentNotification(newArticles.length, categoryUpdates);
+            } else {
+                console.log('Aggressive background refresh completed - no new articles found');
+            }
+            
+        } catch (error) {
+            console.error('Error during aggressive background refresh:', error);
+        }
+    }
+    
+    generateArticleKey(article) {
+        // Create a unique key for duplicate detection
+        const title = article.title ? article.title.toLowerCase().trim() : '';
+        const link = article.link ? article.link.trim() : '';
+        const pubDate = article.pubDate ? new Date(article.pubDate).toISOString().split('T')[0] : '';
+        
+        // Use title + link + date for more accurate duplicate detection
+        return `${title}-${link}-${pubDate}`;
+    }
+
+    showDetailedNewContentNotification(totalCount, categoryUpdates) {
+        // Create a detailed notification that new content is available
+        const existingNotification = document.getElementById('new-content-notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+
+        // Create category breakdown
+        const categoryList = Object.entries(categoryUpdates)
+            .map(([category, count]) => `${category}: ${count}`)
+            .join(', ');
+
+        const notification = document.createElement('div');
+        notification.id = 'new-content-notification';
+        notification.className = 'new-content-notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas fa-bell"></i>
+                <div class="notification-text">
+                    <div class="notification-title">${totalCount} new articles found!</div>
+                    <div class="notification-details">${categoryList}</div>
+                </div>
+                <button onclick="location.reload()" class="btn btn-sm btn-primary">Refresh</button>
+                <button onclick="this.parentElement.parentElement.remove()" class="btn btn-sm btn-secondary">Dismiss</button>
+            </div>
+        `;
+
+        // Add CSS for the notification if it doesn't exist
+        if (!document.getElementById('new-content-notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'new-content-notification-styles';
+            style.textContent = `
+                .new-content-notification {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(0, 102, 255, 0.95);
+                    color: white;
+                    padding: 1rem;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                    z-index: 10000;
+                    animation: slideInRight 0.3s ease-out;
+                    max-width: 400px;
+                }
+                
+                .notification-content {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+                
+                .notification-text {
+                    flex: 1;
+                    min-width: 0;
+                }
+                
+                .notification-title {
+                    font-weight: bold;
+                    margin-bottom: 0.25rem;
+                }
+                
+                .notification-details {
+                    font-size: 0.8rem;
+                    opacity: 0.9;
+                }
+                
+                .notification-content .btn {
+                    padding: 0.25rem 0.5rem;
+                    font-size: 0.8rem;
+                    white-space: nowrap;
+                }
+                
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(notification);
+
+        // Auto-remove after 15 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 15000);
     }
 
     async fetchFeed(feed, category) {
@@ -1950,9 +2254,13 @@ class EnhancedNewsFeedAggregator {
             if (isLoading) {
                 categoryButton.classList.add('loading');
                 this.loadingCategories.add(category);
+                // Add visual loading indicator but don't disable the button
+                categoryButton.style.opacity = '0.7';
+                categoryButton.style.pointerEvents = 'auto'; // Keep it clickable
             } else {
                 categoryButton.classList.remove('loading');
                 this.loadingCategories.delete(category);
+                categoryButton.style.opacity = '1';
             }
         }
     }
@@ -1964,9 +2272,13 @@ class EnhancedNewsFeedAggregator {
             if (isLoading) {
                 button.classList.add('loading');
                 this.loadingCategories.add(category);
+                // Add visual loading indicator but don't disable the button
+                button.style.opacity = '0.7';
+                button.style.pointerEvents = 'auto'; // Keep it clickable
             } else {
                 button.classList.remove('loading');
                 this.loadingCategories.delete(category);
+                button.style.opacity = '1';
             }
         });
     }
@@ -2159,4 +2471,5 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Available elements with "news" in ID:', 
             Array.from(document.querySelectorAll('[id*="news"]')).map(el => el.id));
     }
+}); 
 }); 

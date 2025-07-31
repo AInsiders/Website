@@ -8,17 +8,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="matrix-loader.js"></script>
-  <script src="shared-loader.js"></script>
 </head>
 <body class="home-page">
-      <!-- Loader -->
+      <!-- Loading Screen -->
     <div id="loader" class="loader">
-      <div class="loader-content">
-        <div class="typing-text" id="typing-text"></div>
-        <div class="pulsing-light" id="pulsing-light"></div>
-        <div class="click-hint">Click anywhere to wake up</div>
-      </div>
+        <canvas></canvas>
+        <div class="spark-text">It All Starts With A Spark</div>
+        <div class="continue-text">Click Anywhere To Continue</div>
     </div>
 
   <!-- Website Content -->
@@ -27,15 +23,18 @@
   <!-- Navigation -->
   <nav class="navbar">
     <div class="nav-container">
-                              <div class="nav-logo">
+                              <a href="index.html" class="nav-logo">
                     <img src="ainsiders-logo.png" alt="A.Insiders Logo" class="logo-image" width="40" height="40">
                     <span class="logo-text">A.I</span>
                     <span class="logo-accent">NSIDERS</span>
-                </div>
+                </a>
       <ul class="nav-menu">
         <li><a href="index.html" class="nav-link active">Home</a></li>
         <li class="nav-dropdown">
-          <a href="news-enhanced.html" class="nav-link">News</a>
+          <div class="nav-link-container">
+            <a href="news-enhanced.html" class="nav-link">News</a>
+            <span class="dropdown-arrow">▼</span>
+          </div>
           <ul class="dropdown-menu">
             <li><a href="news-enhanced.html?category=AI" class="dropdown-link">AI</a></li>
             <li><a href="news-enhanced.html?category=Cybersecurity" class="dropdown-link">Cybersecurity</a></li>
@@ -60,7 +59,10 @@
         </li>
         <li><a href="apps.html" class="nav-link">Apps</a></li>
         <li class="nav-dropdown">
-          <a href="about.html" class="nav-link">About</a>
+          <div class="nav-link-container">
+            <a href="about.html" class="nav-link">About</a>
+            <span class="dropdown-arrow">▼</span>
+          </div>
           <ul class="dropdown-menu">
             <li><a href="about.html" class="dropdown-link">About Company</a></li>
             <li><a href="blake-zimmerman.html" class="dropdown-link">Blake Zimmerman</a></li>
@@ -181,5 +183,23 @@
       </div> <!-- End of website-content -->
 
     <script src="brain-script.js"></script>
+    <script src="sphere-loader.js"></script>
+    <script src="mobile-nav.js"></script>
+    
+    <!--Start of Tawk.to Script with 25-second delay-->
+    <script type="text/javascript">
+    setTimeout(function() {
+        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+        (function(){
+        var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+        s1.async=true;
+        s1.src='https://embed.tawk.to/688b284b9abe48192a749848/1j1fpapuu';
+        s1.charset='UTF-8';
+        s1.setAttribute('crossorigin','*');
+        s0.parentNode.insertBefore(s1,s0);
+        })();
+    }, 25000); // 25 seconds delay
+    </script>
+    <!--End of Tawk.to Script-->
   </body>
 </html> 

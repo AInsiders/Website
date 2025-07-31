@@ -1,7 +1,36 @@
 // New Loading Screen Logic - Black screen with typing text and explosion reveal
 document.addEventListener('DOMContentLoaded', function() {
 
-    // No immediate hiding - let the loader show on home page
+    // Check immediately if user has already visited this session
+    const hasVisitedThisSession = sessionStorage.getItem('hasVisitedHomeThisSession');
+    const isHomePage = window.location.pathname.endsWith('index.html') ||
+                      window.location.pathname.endsWith('/') ||
+                      window.location.pathname === '';
+    
+    // If returning user on home page, hide loader immediately
+    if (hasVisitedThisSession && isHomePage) {
+        console.log('Returning user detected - hiding loader immediately');
+        const loader = document.getElementById('loader');
+        const websiteContent = document.getElementById('website-content');
+        
+        if (loader) {
+            loader.style.display = 'none';
+            loader.style.visibility = 'hidden';
+            loader.style.opacity = '0';
+            loader.style.pointerEvents = 'none';
+            loader.style.zIndex = '-1';
+            loader.classList.add('hidden');
+        }
+        
+        if (websiteContent) {
+            websiteContent.style.display = 'block';
+            websiteContent.style.opacity = '1';
+            websiteContent.style.visibility = 'visible';
+            websiteContent.classList.add('revealed');
+        }
+        
+        return; // Don't initialize the loader at all
+    }
     
     // Initialize new loading screen
     initNewLoadingScreen();
@@ -9,7 +38,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to reset first visit flag (for testing)
     window.resetFirstVisit = function() {
         localStorage.removeItem('hasVisitedHome');
-        console.log('First visit flag reset. Reload the page to see the loader again.');
+        localStorage.removeItem('hasVisitedHomeEver');
+        sessionStorage.removeItem('hasVisitedHomeThisSession');
+        console.log('First visit flags reset. Reload the page to see the loader again.');
     };
     
     // New Loading Screen Animation
@@ -40,10 +71,18 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        console.log('Showing new loader - first visit');
+        // Check if this is a first visit ever
+        const isFirstVisitEver = !localStorage.getItem('hasVisitedHomeEver');
         
-        // Mark that user has visited
-        localStorage.setItem('hasVisitedHome', 'true');
+        console.log('Session check:', { isFirstVisitEver });
+        
+        // Mark ever visited for future reference
+        if (isFirstVisitEver) {
+            localStorage.setItem('hasVisitedHomeEver', 'true');
+            console.log('Showing new loader - first visit ever');
+        } else {
+            console.log('Showing Hello Neo loader - returning user');
+        }
         
         // Initialize Matrix loader
         if (window.initMatrixLoader) {

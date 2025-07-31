@@ -589,14 +589,102 @@ document.addEventListener('DOMContentLoaded', function() {
         resizeCanvas();
         initNodes();
         
-        // Only add mouse event listeners on home page for interactivity
+        // Touch event handlers for mobile
+        function handleTouchStart(e) {
+            if (!isHomePage) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = touch.clientX - rect.left;
+            mouse.y = touch.clientY - rect.top;
+            mouse.isMoving = true;
+            handleMouseEnter();
+        }
+
+        function handleTouchMove(e) {
+            if (!isHomePage) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const newX = touch.clientX - rect.left;
+            const newY = touch.clientY - rect.top;
+            
+            // Calculate velocity
+            mouse.velocity.x = newX - mouse.x;
+            mouse.velocity.y = newY - mouse.y;
+            mouse.x = newX;
+            mouse.y = newY;
+            
+            // Add to trail
+            const velocity = Math.sqrt(mouse.velocity.x * mouse.velocity.x + mouse.velocity.y * mouse.velocity.y);
+            mouse.trail.push({ 
+                x: mouse.x, 
+                y: mouse.y, 
+                time: Date.now(),
+                velocity: velocity,
+                pressure: Math.min(1, velocity / 10)
+            });
+            
+            // Optimize trail length
+            const optimalLength = Math.max(8, Math.min(15, Math.floor(velocity / 2) + 6));
+            if (mouse.trail.length > optimalLength) {
+                mouse.trail.shift();
+            }
+            
+            mouse.isMoving = true;
+            clearTimeout(mouse.moveTimeout);
+            mouse.moveTimeout = setTimeout(() => {
+                mouse.isMoving = false;
+            }, 200);
+        }
+
+        function handleTouchEnd(e) {
+            if (!isHomePage) return;
+            e.preventDefault();
+            mouse.isMoving = false;
+            setTimeout(() => {
+                mouse.trail = [];
+            }, 500);
+        }
+
+        // Orientation change handler
+        function handleOrientationChange() {
+            setTimeout(() => {
+                resizeCanvas();
+                // Reinitialize nodes on orientation change
+                nodes.length = 0;
+                initNodes();
+            }, 100);
+        }
+
+        // Add event listeners for both mouse and touch
         if (isHomePage) {
+            // Mouse events
             canvas.addEventListener('mousemove', handleMouseMove);
             canvas.addEventListener('mouseenter', handleMouseEnter);
             canvas.addEventListener('mouseleave', handleMouseLeave);
+            
+            // Touch events for mobile
+            canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+            canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+            canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+            canvas.addEventListener('touchcancel', handleTouchEnd, { passive: false });
         }
         
-        window.addEventListener('resize', resizeCanvas);
+        // Enhanced resize handler with orientation support
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            // Debounce node reinitialization for better performance
+            clearTimeout(window.resizeTimeout);
+            window.resizeTimeout = setTimeout(() => {
+                nodes.length = 0;
+                initNodes();
+            }, 300);
+        });
+        
+        // Orientation change support
+        window.addEventListener('orientationchange', handleOrientationChange);
+        
         animate();
     }
     

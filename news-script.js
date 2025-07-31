@@ -1,4 +1,4 @@
-// A.Insiders News System - RSS Feed Integration
+// A.Insiders News System - RSS Feed Integration with Caching
 class NewsSystem {
     constructor() {
         this.newsGrid = document.getElementById('news-grid');
@@ -9,6 +9,15 @@ class NewsSystem {
         this.allNews = [];
         this.filteredNews = [];
         this.currentCategory = 'all';
+        
+        // Cache configuration
+        this.cacheKey = 'ainsiders_news_cache';
+        this.cacheExpiryKey = 'ainsiders_news_cache_expiry';
+        this.cacheExpiryTime = 30 * 60 * 1000; // 30 minutes in milliseconds
+        this.backgroundRefreshInterval = 5 * 60 * 1000; // 5 minutes for background refresh
+        
+        // Background refresh timer
+        this.refreshTimer = null;
         
         // RSS Feeds from OPML file
         this.rssFeeds = {
@@ -46,9 +55,160 @@ class NewsSystem {
     }
     
     async init() {
-        await this.loadAllFeeds();
+        // Try to load from cache first for instant display
+        const cachedNews = this.loadFromCache();
+        if (cachedNews && cachedNews.length > 0) {
+            this.allNews = cachedNews;
+            this.filteredNews = [...this.allNews];
+            this.renderNews();
+            console.log(`Loaded ${cachedNews.length} articles from cache`);
+            
+            // Start background refresh if cache is getting old
+            if (this.isCacheExpired()) {
+                this.startBackgroundRefresh();
+            } else {
+                // Set up periodic background refresh
+                this.setupBackgroundRefresh();
+            }
+        } else {
+            // No cache available, load normally
+            await this.loadAllFeeds();
+        }
+        
         this.setupEventListeners();
         this.renderNews();
+    }
+    
+    // Cache management methods
+    loadFromCache() {
+        try {
+            const cachedData = localStorage.getItem(this.cacheKey);
+            const cacheExpiry = localStorage.getItem(this.cacheExpiryKey);
+            
+            if (cachedData && cacheExpiry) {
+                const expiryTime = parseInt(cacheExpiry);
+                const now = Date.now();
+                
+                // Return cached data even if expired (for instant loading)
+                // Background refresh will update it
+                const parsedData = JSON.parse(cachedData);
+                if (Array.isArray(parsedData) && parsedData.length > 0) {
+                    return parsedData;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading from cache:', error);
+        }
+        return null;
+    }
+    
+    saveToCache(newsData) {
+        try {
+            const dataToStore = JSON.stringify(newsData);
+            const expiryTime = Date.now() + this.cacheExpiryTime;
+            
+            localStorage.setItem(this.cacheKey, dataToStore);
+            localStorage.setItem(this.cacheExpiryKey, expiryTime.toString());
+            
+            console.log(`Cached ${newsData.length} articles`);
+        } catch (error) {
+            console.error('Error saving to cache:', error);
+            // If localStorage is full, try to clear old data
+            this.clearCache();
+        }
+    }
+    
+    isCacheExpired() {
+        try {
+            const cacheExpiry = localStorage.getItem(this.cacheExpiryKey);
+            if (!cacheExpiry) return true;
+            
+            const expiryTime = parseInt(cacheExpiry);
+            return Date.now() > expiryTime;
+        } catch (error) {
+            return true;
+        }
+    }
+    
+    clearCache() {
+        try {
+            localStorage.removeItem(this.cacheKey);
+            localStorage.removeItem(this.cacheExpiryKey);
+            console.log('Cache cleared');
+        } catch (error) {
+            console.error('Error clearing cache:', error);
+        }
+    }
+    
+    async startBackgroundRefresh() {
+        console.log('Starting background refresh...');
+        try {
+            const freshNews = await this.fetchAllFeedsInBackground();
+            if (freshNews && freshNews.length > 0) {
+                // Merge new articles with existing ones, avoiding duplicates
+                const mergedNews = this.mergeNewsArrays(this.allNews, freshNews);
+                this.allNews = mergedNews;
+                this.filteredNews = [...this.allNews];
+                this.saveToCache(this.allNews);
+                this.renderNews();
+                console.log(`Background refresh completed: ${freshNews.length} new articles fetched`);
+            }
+        } catch (error) {
+            console.error('Background refresh failed:', error);
+        }
+        
+        // Set up next background refresh
+        this.setupBackgroundRefresh();
+    }
+    
+    setupBackgroundRefresh() {
+        // Clear existing timer
+        if (this.refreshTimer) {
+            clearTimeout(this.refreshTimer);
+        }
+        
+        // Set up next refresh
+        this.refreshTimer = setTimeout(() => {
+            this.startBackgroundRefresh();
+        }, this.backgroundRefreshInterval);
+    }
+    
+    mergeNewsArrays(existingNews, newNews) {
+        const merged = [...existingNews];
+        const existingLinks = new Set(existingNews.map(article => article.link));
+        
+        // Add only new articles (not duplicates)
+        newNews.forEach(article => {
+            if (!existingLinks.has(article.link)) {
+                merged.push(article);
+            }
+        });
+        
+        // Sort by date (newest first) and limit to reasonable number
+        merged.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+        return merged.slice(0, 500); // Keep max 500 articles
+    }
+    
+    async fetchAllFeedsInBackground() {
+        // Same as loadAllFeeds but without updating UI
+        const allFeeds = [];
+        
+        Object.values(this.rssFeeds).forEach(feeds => {
+            allFeeds.push(...feeds);
+        });
+        
+        const feedPromises = allFeeds.map(url => this.fetchRSSFeed(url));
+        const results = await Promise.allSettled(feedPromises);
+        
+        const articles = [];
+        results.forEach((result, index) => {
+            if (result.status === 'fulfilled' && result.value) {
+                articles.push(...result.value);
+            }
+        });
+        
+        articles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+        return articles;
     }
     
     async loadAllFeeds() {
@@ -73,6 +233,12 @@ class NewsSystem {
         // Sort by date (newest first)
         this.allNews.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
         this.filteredNews = [...this.allNews];
+        
+        // Save to cache for future loads
+        this.saveToCache(this.allNews);
+        
+        // Set up background refresh
+        this.setupBackgroundRefresh();
         
         console.log(`Loaded ${this.allNews.length} articles from RSS feeds`);
     }
