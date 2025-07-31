@@ -7,6 +7,11 @@ let isTyping = false;
 let currentText = '';
 let targetText = 'Hello Neo';
 let typingIndex = 0;
+let isBackspacing = false;
+let backspaceIndex = 0;
+let welcomeText = 'Welcome Back';
+let welcomeIndex = 0;
+let isFirstVisitEver = true;
 let matrixRevealProgress = 0;
 let brightnessLevel = 1;
 let colorPhase = 'green'; // 'green' -> 'brightening' -> 'blue' -> 'fade'
@@ -44,6 +49,92 @@ const easing = {
 function initMatrixLoader() {
     console.log('Initializing Matrix Loader...');
     
+    // Check if elements exist
+    const loader = document.getElementById('loader');
+    const typingText = document.getElementById('typing-text');
+    const websiteContent = document.getElementById('website-content');
+    
+    console.log('Elements found:', {
+        loader: !!loader,
+        typingText: !!typingText,
+        websiteContent: !!websiteContent
+    });
+    
+    if (!loader || !typingText) {
+        console.error('Required elements not found!');
+        return;
+    }
+    
+    // Check if this is a first visit ever
+    isFirstVisitEver = !localStorage.getItem('hasVisitedHomeEver');
+    
+    // Check if user has already visited in this session
+    const hasVisitedThisSession = sessionStorage.getItem('hasVisitedHomeThisSession');
+    
+    // If user has already visited in this session, skip the animation
+    if (hasVisitedThisSession) {
+        console.log('Skipping Matrix Loader - already visited this session');
+        // Hide loader immediately and completely
+        const loader = document.getElementById('loader');
+        if (loader) {
+            loader.style.display = 'none';
+            loader.style.visibility = 'hidden';
+            loader.style.opacity = '0';
+            loader.style.pointerEvents = 'none';
+            loader.style.zIndex = '-1';
+            loader.classList.add('hidden');
+        }
+        
+        // Show website content immediately
+        const websiteContent = document.getElementById('website-content');
+        if (websiteContent) {
+            websiteContent.style.display = 'block';
+            websiteContent.style.opacity = '1';
+            websiteContent.style.visibility = 'visible';
+            websiteContent.classList.add('revealed');
+        }
+        
+        // Stop any matrix rain effects
+        if (window.matrixRain && window.matrixRain.stop) {
+            window.matrixRain.stop();
+        }
+        
+        return;
+    }
+    
+    // Mark that user has visited this session (but don't set it yet - wait until animation completes)
+    // sessionStorage.setItem('hasVisitedHomeThisSession', 'true');
+    
+    // Always show "Hello Neo" first, then "Welcome Back"
+    targetText = 'Hello Neo';
+    welcomeText = 'Welcome Back';
+    
+    console.log('Matrix Loader initialized:', { isFirstVisitEver, targetText, welcomeText });
+    console.log('Session storage set:', sessionStorage.getItem('hasVisitedHomeThisSession'));
+    
+    // Clear any existing text and prepare for animation
+    if (typingText) {
+        typingText.innerHTML = '';
+        console.log('Typing text element found and ready for animation');
+        
+        // Add a visual test to ensure the element is working
+        setTimeout(() => {
+            typingText.innerHTML = 'Testing...';
+            console.log('Visual test: "Testing..." should appear');
+            
+            setTimeout(() => {
+                typingText.innerHTML = '';
+                console.log('Visual test complete, starting animation...');
+                // Start the actual animation
+                startMatrixSequence();
+            }, 1000);
+        }, 500);
+        
+    } else {
+        console.error('Typing text element not found!');
+        return;
+    }
+    
     // Create matrix canvas
     matrixCanvas = document.createElement('canvas');
     matrixCanvas.width = window.innerWidth;
@@ -54,19 +145,26 @@ function initMatrixLoader() {
     matrixCanvas.style.zIndex = '5';
     matrixCanvas.style.pointerEvents = 'none';
     matrixCanvas.classList.add('matrix-canvas');
+    matrixCanvas.id = 'matrix-rain-canvas';
     
-    const loader = document.getElementById('loader');
     if (loader) {
         loader.appendChild(matrixCanvas);
     }
     
     matrixCtx = matrixCanvas.getContext('2d');
     
-    // Initialize matrix symbols
-    initMatrixSymbols();
+    // Initialize enhanced matrix rain effect
+    if (window.EnhancedMatrixRain) {
+        window.matrixRain = new window.EnhancedMatrixRain('matrix-rain-canvas');
+        window.matrixRain.start();
+        console.log('Enhanced Matrix Rain started');
+    } else {
+        // Fallback to original matrix symbols
+        initMatrixSymbols();
+    }
     
-    // Start the sequence
-    startMatrixSequence();
+    // Matrix sequence will be started after visual test
+    console.log('Matrix sequence will start after visual test...');
     
     // Handle resize
     window.addEventListener('resize', handleMatrixResize);
@@ -127,32 +225,54 @@ function initMatrixSymbols() {
 }
 
 function startMatrixSequence() {
+    console.log('Matrix sequence starting...');
+    
+    // Reset typing state
+    isTyping = false;
+    isBackspacing = false;
+    typingIndex = 0;
+    currentText = '';
+    
+    // Start typing immediately
+    console.log('Starting typing animation for:', targetText);
+    isTyping = true;
+    startTyping();
+    
     // Add click listener for manual wake up
     document.addEventListener('click', function wakeUpClick() {
-        if (!isTyping && currentText === '') {
-            // Skip to typing if clicked before auto-start
-            isTyping = true;
-            startTyping();
+        console.log('Click detected, current text:', currentText, 'target:', targetText);
+        
+        if (currentText === targetText && !isBackspacing && matrixRevealProgress === 0) {
+            // Start backspacing if clicked after "Hello Neo" is complete
+            console.log('Starting backspacing after click');
+            startBackspacing();
             document.removeEventListener('click', wakeUpClick);
-        } else if (currentText === targetText && matrixRevealProgress === 0) {
-            // Start reveal if clicked after typing is complete
-            startMatrixReveal();
+        } else if (currentText === welcomeText && matrixRevealProgress === 0) {
+            // Start color transition if clicked after "Welcome Back" is complete
+            console.log('Starting color transition after click');
+            startColorTransition();
             document.removeEventListener('click', wakeUpClick);
         }
     });
     
-    // Start typing after extended delay (auto-start) - Extended to 20 seconds as requested
-    setTimeout(() => {
-        if (!isTyping) {
-            isTyping = true;
-            startTyping();
+    // Add escape key listener for immediate skip
+    document.addEventListener('keydown', function escapeSkip(e) {
+        if (e.key === 'Escape') {
+            console.log('Escape key pressed - skipping animation immediately');
+            skipAnimationImmediately();
+            document.removeEventListener('keydown', escapeSkip);
         }
-    }, 20000); // Extended to 20 seconds to give user time to click
+    });
 }
 
 function startTyping() {
     const typingText = document.getElementById('typing-text');
-    if (!typingText) return;
+    if (!typingText) {
+        console.error('Typing text element not found!');
+        return;
+    }
+    
+    console.log('Starting typing animation for:', targetText);
     
     function typeNextChar() {
         if (typingIndex < targetText.length) {
@@ -160,19 +280,118 @@ function startTyping() {
             typingText.innerHTML = currentText + '<span class="cursor">|</span>';
             typingIndex++;
             
-            setTimeout(typeNextChar, 120); // Slightly faster typing
+            console.log('Typing progress:', currentText);
+            setTimeout(typeNextChar, 120); // Typing speed
         } else {
             // Remove cursor after typing is complete
             typingText.innerHTML = currentText;
+            console.log('Typing complete:', currentText);
             
-            // Typing complete, start matrix reveal
+            // Wait for user interaction or timeout before backspacing
+            console.log('"Hello Neo" displayed - waiting for user interaction or timeout');
+            
+            // Auto-start backspacing after 20 seconds if user doesn't click
             setTimeout(() => {
-                startMatrixReveal();
-            }, 800);
+                if (currentText === targetText && !isBackspacing && matrixRevealProgress === 0) {
+                    console.log('Auto-starting backspacing after 20 seconds');
+                    startBackspacing();
+                }
+            }, 20000); // 20 seconds timeout
         }
     }
     
     typeNextChar();
+}
+
+function startBackspacing() {
+    const typingText = document.getElementById('typing-text');
+    if (!typingText) return;
+    
+    isBackspacing = true;
+    backspaceIndex = currentText.length;
+    
+            function backspaceNextChar() {
+            if (backspaceIndex > 0) {
+                currentText = currentText.slice(0, -1);
+                typingText.innerHTML = currentText + '<span class="cursor">|</span>';
+                backspaceIndex--;
+                
+                setTimeout(backspaceNextChar, 30); // Much faster backspacing as requested
+            } else {
+                // Backspacing complete, start typing welcome message
+                setTimeout(() => {
+                    startWelcomeTyping();
+                }, 300);
+            }
+        }
+    
+    backspaceNextChar();
+}
+
+function startWelcomeTyping() {
+    const typingText = document.getElementById('typing-text');
+    if (!typingText) return;
+    
+    isBackspacing = false;
+    welcomeIndex = 0;
+    currentText = '';
+    
+    console.log('Starting welcome typing:', welcomeText);
+    
+    function typeWelcomeChar() {
+        if (welcomeIndex < welcomeText.length) {
+            currentText += welcomeText[welcomeIndex];
+            typingText.innerHTML = currentText + '<span class="cursor">|</span>';
+            welcomeIndex++;
+            
+            setTimeout(typeWelcomeChar, 120); // Consistent typing speed
+        } else {
+            // Remove cursor after typing is complete
+            typingText.innerHTML = currentText;
+            
+            // Start color transition from green to blue
+            startColorTransition();
+        }
+    }
+    
+    typeWelcomeChar();
+}
+
+function startColorTransition() {
+    console.log('Starting color transition from green to blue');
+    
+    let transitionProgress = 0;
+    const transitionDuration = 2000; // 2 seconds for color transition
+    const startTime = Date.now();
+    
+    function updateColor() {
+        const elapsed = Date.now() - startTime;
+        transitionProgress = Math.min(1, elapsed / transitionDuration);
+        
+        // Calculate color values (green to blue)
+        const red = Math.floor(20 + transitionProgress * 30);
+        const green = Math.floor(255 - transitionProgress * 180);
+        const blue = Math.floor(100 + transitionProgress * 155);
+        
+        // Update text color
+        const typingText = document.getElementById('typing-text');
+        if (typingText) {
+            typingText.style.color = `rgb(${red}, ${green}, ${blue})`;
+        }
+        
+        // Update matrix color phase
+        if (transitionProgress < 1) {
+            requestAnimationFrame(updateColor);
+        } else {
+            // Color transition complete, wait 2 seconds then start matrix reveal
+            setTimeout(() => {
+                console.log('Color transition complete, starting matrix reveal');
+                startMatrixReveal();
+            }, 2000); // 2 seconds wait on solid blue
+        }
+    }
+    
+    updateColor();
 }
 
 function startMatrixReveal() {
@@ -186,11 +405,20 @@ function startMatrixReveal() {
     }
     
     let startTime = Date.now();
+    window.colorTransitionStart = Date.now();
+    let isColorTransitioning = false;
     
     // Enhanced matrix animation with smoother transitions
     function animateMatrix() {
         const currentTime = Date.now();
         const deltaTime = currentTime - startTime;
+        const colorDeltaTime = currentTime - window.colorTransitionStart;
+        
+        // Start color transition after 1 second
+        if (colorDeltaTime > 1000 && !isColorTransitioning) {
+            isColorTransitioning = true;
+            colorPhase = 'transitioning';
+        }
         
         // Update color phase and brightness with easing
         updateColorPhase();
@@ -199,10 +427,10 @@ function startMatrixReveal() {
         pulseIntensity = 1 + Math.sin(deltaTime * 0.005) * 0.3;
         glitchEffect = Math.sin(deltaTime * 0.01) * 0.1;
         
-        // Clear canvas with gradient for depth
+        // Clear canvas with darker gradient for depth
         const gradient = matrixCtx.createLinearGradient(0, 0, 0, matrixCanvas.height);
         gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
-        gradient.addColorStop(0.5, 'rgba(0, 5, 0, 0.98)');
+        gradient.addColorStop(0.5, 'rgba(0, 0, 0, 0.95)');
         gradient.addColorStop(1, 'rgba(0, 0, 0, 1)');
         matrixCtx.fillStyle = gradient;
         matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
@@ -231,7 +459,7 @@ function startMatrixReveal() {
             // Matrix reveal complete with smooth transition
             setTimeout(() => {
                 completeMatrixReveal();
-            }, 800);
+            }, 1800);
         }
     }
     
@@ -241,7 +469,19 @@ function startMatrixReveal() {
 function updateColorPhase() {
     const easedProgress = easing.easeInOut(matrixRevealProgress);
     
-    if (easedProgress < 0.25) {
+    if (colorPhase === 'transitioning') {
+        // Handle color transition from green to blue
+        const transitionProgress = Math.min(1, (Date.now() - window.colorTransitionStart - 1000) / 2000);
+        
+        if (transitionProgress < 1) {
+            // Still transitioning
+            brightnessLevel = 3 + transitionProgress * 5 * pulseIntensity;
+        } else {
+            // Transition complete, move to blue phase
+            colorPhase = 'blue';
+            brightnessLevel = 8 * pulseIntensity;
+        }
+    } else if (easedProgress < 0.25) {
         colorPhase = 'green';
         brightnessLevel = 1 + easedProgress * 2; // Subtle brightening
     } else if (easedProgress < 0.5) {
@@ -319,55 +559,44 @@ function drawEnhancedMatrixSymbols() {
     matrixColumns.forEach(column => {
         column.symbols.forEach((symbol, index) => {
             const isLeadSymbol = index === column.symbols.length - 1;
-            let color, shadowColor, shadowBlur;
+            let color;
+        
+        // Calculate color based on phase with smooth transitions
+        if (colorPhase === 'green' || colorPhase === 'brightening') {
+            const intensity = Math.min(255, 80 + brightnessLevel * 40);
+            const green = Math.min(255, 120 + brightnessLevel * 50);
+            color = `rgba(${Math.floor(intensity * 0.3)}, ${Math.floor(green)}, ${Math.floor(intensity * 0.3)}, ${symbol.opacity})`;
+        } else if (colorPhase === 'transitioning') {
+            // Smooth green to blue transition during color change
+            const transitionProgress = Math.min(1, (Date.now() - window.colorTransitionStart - 1000) / 2000);
+            const red = Math.floor(20 + transitionProgress * 30);
+            const green = Math.floor(255 - transitionProgress * 180);
+            const blue = Math.floor(100 + transitionProgress * 155);
+            const intensity = brightnessLevel * 60;
             
-            // Calculate color based on phase with smooth transitions
-            if (colorPhase === 'green' || colorPhase === 'brightening') {
-                const intensity = Math.min(255, 80 + brightnessLevel * 40);
-                const green = Math.min(255, 120 + brightnessLevel * 50);
-                color = `rgba(${Math.floor(intensity * 0.3)}, ${Math.floor(green)}, ${Math.floor(intensity * 0.3)}, ${symbol.opacity})`;
-                shadowColor = `rgba(0, ${Math.floor(green * 0.8)}, 0, 0.8)`;
-                shadowBlur = brightnessLevel * 3;
-            } else if (colorPhase === 'blue') {
-                // Smooth green to blue transition
-                const blueProgress = Math.min(1, (matrixRevealProgress - 0.5) / 0.3);
-                const red = Math.floor(20 + blueProgress * 30);
-                const green = Math.floor(255 - blueProgress * 180);
-                const blue = Math.floor(100 + blueProgress * 155);
-                const intensity = brightnessLevel * 60;
-                
-                color = `rgba(${Math.floor(red + intensity * 0.2)}, ${Math.floor(green + intensity * 0.3)}, ${Math.floor(blue + intensity * 0.5)}, ${symbol.opacity})`;
-                shadowColor = `rgba(${red}, ${green}, ${blue}, 0.6)`;
-                shadowBlur = brightnessLevel * 4;
-            } else { // fade
-                const fadeAlpha = symbol.opacity * brightnessLevel * 0.2;
-                color = `rgba(100, 150, 255, ${fadeAlpha})`;
-                shadowColor = `rgba(50, 100, 200, ${fadeAlpha * 0.5})`;
-                shadowBlur = 2;
-            }
+            color = `rgba(${Math.floor(red + intensity * 0.2)}, ${Math.floor(green + intensity * 0.3)}, ${Math.floor(blue + intensity * 0.5)}, ${symbol.opacity})`;
+        } else if (colorPhase === 'blue') {
+            // Solid blue phase
+            const red = Math.floor(50);
+            const green = Math.floor(75);
+            const blue = Math.floor(255);
+            const intensity = brightnessLevel * 60;
             
-            // Apply glitch effect
-            let x = column.x;
-            if (symbol.isGlitching) {
-                x += (Math.random() - 0.5) * 4;
-                shadowBlur *= 2;
-            }
+            color = `rgba(${Math.floor(red + intensity * 0.2)}, ${Math.floor(green + intensity * 0.3)}, ${Math.floor(blue + intensity * 0.5)}, ${symbol.opacity})`;
+        } else { // fade
+            const fadeAlpha = symbol.opacity * brightnessLevel * 0.2;
+            color = `rgba(100, 150, 255, ${fadeAlpha})`;
+        }
+        
+        // Apply glitch effect
+        let x = column.x;
+        if (symbol.isGlitching) {
+            x += (Math.random() - 0.5) * 4;
+        }
             
-            // Enhanced drawing with glow effect
+            // Draw character (no blur/glow effects)
             matrixCtx.font = `${Math.floor(symbol.size)}px 'Courier New', monospace`;
             matrixCtx.textAlign = 'center';
-            
-            // Draw glow/shadow first
-            if (shadowBlur > 0) {
-                matrixCtx.shadowColor = shadowColor;
-                matrixCtx.shadowBlur = shadowBlur;
-                matrixCtx.globalAlpha = 0.6;
-                matrixCtx.fillStyle = shadowColor;
-                matrixCtx.fillText(symbol.char, x + symbol.size * 0.5, symbol.y);
-            }
-            
-            // Draw main character
-            matrixCtx.shadowBlur = 0;
             matrixCtx.globalAlpha = symbol.opacity;
             matrixCtx.fillStyle = color;
             matrixCtx.fillText(symbol.char, x + symbol.size * 0.5, symbol.y);
@@ -384,7 +613,6 @@ function drawEnhancedMatrixSymbols() {
     
     // Reset drawing state
     matrixCtx.globalAlpha = 1;
-    matrixCtx.shadowBlur = 0;
     matrixCtx.textAlign = 'start';
 }
 
@@ -423,6 +651,12 @@ function createMatrixCutouts() {
 function completeMatrixReveal() {
     console.log('Enhanced Matrix Reveal Complete');
     
+    // Stop matrix rain effect
+    if (window.matrixRain) {
+        window.matrixRain.stop();
+        console.log('Matrix Rain stopped');
+    }
+    
     // Cancel any ongoing animation
     if (animationId) {
         cancelAnimationFrame(animationId);
@@ -449,6 +683,10 @@ function completeMatrixReveal() {
                 websiteContent.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
                 websiteContent.classList.add('revealed');
             }
+            
+            // Ensure session is marked as visited
+            sessionStorage.setItem('hasVisitedHomeThisSession', 'true');
+            console.log('Session marked as visited:', sessionStorage.getItem('hasVisitedHomeThisSession'));
             
             // Hide loader with smooth transition
             const loader = document.getElementById('loader');
@@ -501,9 +739,89 @@ function cleanupMatrix() {
     console.log('Enhanced Matrix cleanup complete');
 }
 
+// Function to immediately skip animation and show home page
+function skipAnimationImmediately() {
+    console.log('Skipping animation immediately');
+    
+    // Mark session as visited immediately
+    sessionStorage.setItem('hasVisitedHomeThisSession', 'true');
+    console.log('Session marked as visited immediately');
+    
+    // Stop any ongoing animations
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
+    
+    // Stop matrix rain
+    if (window.matrixRain && window.matrixRain.stop) {
+        window.matrixRain.stop();
+    }
+    
+    // Hide loader immediately
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.display = 'none';
+        loader.style.visibility = 'hidden';
+        loader.style.opacity = '0';
+        loader.style.pointerEvents = 'none';
+        loader.style.zIndex = '-1';
+        loader.classList.add('hidden');
+    }
+    
+    // Show website content immediately
+    const websiteContent = document.getElementById('website-content');
+    if (websiteContent) {
+        websiteContent.style.display = 'block';
+        websiteContent.style.opacity = '1';
+        websiteContent.style.visibility = 'visible';
+        websiteContent.classList.add('revealed');
+    }
+    
+    // Remove matrix canvas if it exists
+    if (matrixCanvas && matrixCanvas.parentNode) {
+        matrixCanvas.parentNode.removeChild(matrixCanvas);
+    }
+    
+    console.log('Animation skipped - home page should be visible');
+}
+
 // Make functions and variables globally available
 window.initMatrixLoader = initMatrixLoader;
+window.startTyping = startTyping;
 window.cleanupMatrix = cleanupMatrix;
 window.matrixRevealProgress = matrixRevealProgress;
 window.colorPhase = colorPhase;
-window.brightnessLevel = brightnessLevel; 
+window.brightnessLevel = brightnessLevel;
+
+// Debug function for testing
+window.testTyping = function() {
+    const typingText = document.getElementById('typing-text');
+    if (typingText) {
+        console.log('Testing typing element...');
+        typingText.innerHTML = 'Hello Neo';
+        console.log('"Hello Neo" should be visible now');
+    } else {
+        console.error('Typing text element not found!');
+    }
+};
+
+// Auto-initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Matrix Loader DOMContentLoaded - checking if we should initialize');
+    
+    // Check if this is the home page
+    const isHomePage = window.location.pathname.endsWith('index.html') ||
+                      window.location.pathname.endsWith('/') ||
+                      window.location.pathname === '';
+    
+    if (isHomePage) {
+        console.log('Matrix Loader: Home page detected, initializing...');
+        // Small delay to ensure all elements are ready
+        setTimeout(() => {
+            initMatrixLoader();
+        }, 100);
+    } else {
+        console.log('Matrix Loader: Not home page, skipping initialization');
+    }
+}); 
